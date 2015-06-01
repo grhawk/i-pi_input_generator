@@ -128,7 +128,7 @@ class DftbInput(GeneralInput):
     
     def writeInput(self):
         self.dftbInput()
-        super().writeInput(self)
+        super().writeInput()
 
 
 class InputNotDefined(Exception):

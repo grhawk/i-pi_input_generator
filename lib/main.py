@@ -39,10 +39,19 @@ Long multiline description.
 #     git_v = 'Not Yet Tagged!'
 
 
-import inputsCreator as ic
+# import inputsCreator as ic
+# 
+# inp = ic.DftbInput('../example/tests/testfile.hsd')
+# inp.parameters['Hamiltonian_SCC'] = 'Yes'
+# inp.writeInput()
+# print (ic.__version__)
 
-inp = ic.DftbInput('../example/tests/testfile.hsd')
-inp.parameters['Hamiltonian_SCC'] = 'Yes'
-inp.writeInput()
-print (ic.__version__)
+print('TEST')
+import paramDFTB
+test = paramDFTB.InputDftb()
+test.add_keyword('Port', 192, 'Driver','IPI')
+test.write()
+print('ciao')
+#test['AAAAAAAAAAAAAAAAAAAAAAa'] = 'a'
+#print(test.prepare_input())
 
