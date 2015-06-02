@@ -47,10 +47,11 @@ Long multiline description.
 # print (ic.__version__)
 
 print('TEST')
-import paramDFTB
-test = paramDFTB.InputDftb()
+import input_dftb
+test = input_dftb.InputDftb()
 test.add_keyword('Port', 192, 'Driver','IPI')
-test.write()
+test['asdasd'] = 10
+print(test.write())
 print('ciao')
 #test['AAAAAAAAAAAAAAAAAAAAAAa'] = 'a'
 #print(test.prepare_input())
