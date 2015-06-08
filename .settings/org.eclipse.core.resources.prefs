@@ -1,4 +1,8 @@
 eclipse.preferences.version=1
+encoding//lib/dftbp/geo_gen.py=utf-8
+encoding//lib/dftbp/input_dftb.py=utf-8
 encoding//lib/inputsCreator.py=utf-8
+encoding//lib/io_libs/io_geo.py=utf-8
+encoding//lib/libs/geometry.py=utf-8
 encoding//lib/main.py=utf-8
 encoding//lib/paramDFTB.py=utf-8
