@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# 
+#
 # Project:    inputsGen
 # FileName:   main
 # Creation:   Jun 1, 2015
@@ -39,20 +39,22 @@ Long multiline description.
 #     git_v = 'Not Yet Tagged!'
 
 
-# import inputsCreator as ic
-# 
-# inp = ic.DftbInput('../example/tests/testfile.hsd')
-# inp.parameters['Hamiltonian_SCC'] = 'Yes'
-# inp.writeInput()
-# print (ic.__version__)
+# To test the dftbp module
+# print('TEST')
+# from dftbp import input_dftb
+# test = dftbp.input_dftb.InputDftb()
+# test.add_keyword('Port', 192, 'Driver', 'IPI')
+# print(dftbp.input_dftb.__version__)
+# print('ciao')
 
-print('TEST')
-import input_dftb
-test = input_dftb.InputDftb()
-test.add_keyword('Port', 192, 'Driver','IPI')
-test['asdasd'] = 10
-print(test.write())
-print('ciao')
-#test['AAAAAAAAAAAAAAAAAAAAAAa'] = 'a'
-#print(test.prepare_input())
+# To test the libs Module
+from libs.io_geo import GeoIo
+
+geo = GeoIo
+geo.xyz_read('../example/test.xyz')
+
+# geo = Xyz()
+
+# print(geo.__version__)
+
 
