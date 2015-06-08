@@ -48,10 +48,10 @@ Long multiline description.
 # print('ciao')
 
 # To test the libs Module
-from io_libs.io_geo import Xyz
+from libs.io_geo import GeoIo
 
-geo = Xyz()
-geo.read('../example/test.xyz')
+geo = GeoIo
+geo.xyz_read('../example/test.xyz')
 # geo = Xyz()
 
 # print(geo.__version__)
