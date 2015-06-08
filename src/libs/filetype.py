@@ -70,6 +70,7 @@ class FileType(object):
 
         """
         if BannerLines().xyz.match(string): return 'xyz'
+        elif BannerLines().gen.match(string): return 'gen'
         else: return 'None'
 
 
