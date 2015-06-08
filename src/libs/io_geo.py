@@ -116,22 +116,42 @@ class GeoIo(Geometry):
         return msg
 
     def gen_read(self, filepath):
+        """Read the gen geometry from a file given as argument.
+
+        Read the geometry from a file given as argument. The parsing process is
+        based on both regular expression and expected position. If the gen file
+        has a different format than the expected one, unpredictable effect could
+        arise.
+
+        Args:
+            filepath: the path of the file to be readed.
+
+        Todo:
+            This should be implemented to work with file objects intead of path.
+            Implement the fractional coordinates (low priority)
+        """
         frame = 0
         coords = []
         with open(filepath) as f:
             for k, line in enumerate(f):
-                if BannerLines().gen.match(line):
+                if BannerLines().gen.match(line):  # Check if the first line is
+                                                # the first line matches the
+                                                # expected format
                     natom = int(line.split()[0])
                     mode = line.split()[1].strip()
                     supercell = mode == 'S'
                     cluster = mode == 'C'
                     crystal = mode == 'F'
                     if crystal:
-                        raise NotImplementedError(
+                        raise NotImplementedError(# The fractional coordinates
+                                                    # are not implemented!
                             'F is not usable with this script')
-                    if cluster or supercell: pass
+                    if cluster or supercell: pass  # Just to avoid error style
+                                                # error and to be consistent
                     frame += 1
-                    if frame > 1: raise IsTrajectory(filepath)
+                    if frame > 1: raise IsTrajectory(filepath)  # If there are
+                                                # more lines with the "banner"
+                                                # format raise the error
                 if k == 1: self.specienames = line.split()
                 if k > 1 and k < 2 + natom:
                     _, tmp, x, y, z = line.split()
@@ -147,6 +167,14 @@ class GeoIo(Geometry):
             raise WrongNumberOfAtoms(self.natom, len(self.coords))
 
     def gen_write(self):
+        """Return the geometry stored in the instance in the gen format.
+
+        After a geometry has been red, this method will return the geometry
+        in the gen format.
+
+        Todo:
+
+        """
         gen_format = '{a:5d}  {b:3d}  {x:12.6f}  {y:12.6f}  {z:12.6f}\n'.format
         if self.periodic:
             mode = 'S'
@@ -167,6 +195,15 @@ class GeoIo(Geometry):
 
 
 class IsTrajectory(Exception):
+    """If the file is a trajectory while a single structure was expected.
+
+    Right now most of the stuff are implemented for single structure files. If
+    the used structure is in a trajectory format raise this error.
+
+    Args:
+        filepath: Name of the file containing the unexpected format.
+
+    """
     def __init__(self, filepath):
         msg = 'The file {} contains a trajectory.\n'.format(filepath)
         msg += 'Only single molecule format is supported\n'
@@ -175,6 +212,17 @@ class IsTrajectory(Exception):
 
 
 class WrongNumberOfAtoms(Exception):
+    """ If the declared number and the number of coordinates do not match.
+
+    This is mostly for debugging purpose. Anyway this is raised when the number
+    of atoms declared in the beginning of the structure file does not match with
+    the number of atoms effectively present in the file.
+
+    Args:
+        expected: number of atoms declared in the file format.
+        found: number of coordinates effectively found in the file.
+
+    """
     def __init__(self, expected, found):
         msg = 'Readed {0:d} atoms while {1:d} were expected!\n'.format(
             found, expected)
