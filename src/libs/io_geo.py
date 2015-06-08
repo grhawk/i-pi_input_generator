@@ -7,7 +7,7 @@
 # Creation: Jun 2, 2015
 #
 
-"""Contains all the things to write and xyz files"""
+"""Contains all the things to write and read structure files"""
 
 import sys
 from libs.geometry import Geometry
@@ -34,24 +34,48 @@ __status__ = 'development'
 
 
 class GeoIo(Geometry):
+    """All the stuff to read and write geometry files.
 
+    It inherits from the Geometry class.
+
+    """
     def __init__(self):
         super().__init__()
         self.filepath = None
 
     def xyz_read(self, filepath):
+        """Read the xyz geometry from a file given as argument.
+
+        Read the geometry from a file given as argument. The parsing process is
+        based on both regular expression and expected position. If the xyz file
+        has a different format than the expected one, unpredictable effect could
+        arise.
+
+        Args:
+            filepath: the path of the file to be readed.
+
+        Todo:
+            This should be implemented to work with file objects intead of path.
+
+        """
         frame = 0
         atype = []
         coords = []
         with open(filepath) as f:
             for k, line in enumerate(f):
-                if BannerLines().xyz.match(line):
+                if BannerLines().xyz.match(line):  # Check if first line is an
+                                                # integer.
                     natom = int(line)
                     frame += 1
-                    if frame > 1: raise IsTrajectory(filepath)
-                if k == 1: comment = line
+                    if frame > 1: raise IsTrajectory(filepath)  # If the file
+                                                # contains more than one line
+                                                # with one only integer then the
+                                                # file is considered a
+                                                # trajectory
+                if k == 1: comment = line  # The second line is the comment
                 if k > 1:
-                    tmp, x, y, z = line.split()
+                    tmp, x, y, z = line.split()  # All the following line will
+                                                # contains all the atom coords.
                     atype.append(tmp)
                     coords.append([float(x), float(y), float(z)])
         self.coords = np.array(coords)
@@ -59,20 +83,28 @@ class GeoIo(Geometry):
         self.nspecie = len(self.specienames)
         self.natom = natom
         self.comment = comment.strip()
-        if len(self.coords) != self.natom:
+        if len(self.coords) != self.natom:  # Just check if the number of coords
+                                            # is compatible with the number of
+                                            # declare atoms
             raise WrongNumberOfAtoms(self.natom, len(self.coords))
-        for at in atype:
+        for at in atype:  # Build the indexes
             self.indexes.append(self.specienames.index(at))
-        if BannerLines().vector.match(self.comment):
-            self.lattice = [float(i) for i in self.comment.split()]
-            self.periodic = True
 
     def xyz_write(self):
+        """Return the geometry stored in the instance in the xyz format.
+
+        After a geometry has been red, this method will return the geometry
+        in the xyz format.
+
+        Todo:
+            The comment should contains the lattice vectors if the structure is
+            periodic.
+
+        """
         if not self.comment:
             self.comment = 'Written by inputsGen'
         if self.latvecs:
-            self.comment = '{0:12.6f} {1:12.6f} {2:12.6}\n'.format(
-                self.latvecs[0], self.latvecs[1], self.latvecs[2])
+            self.comment = 'This structure is in a periodic system!!'
         xyz_format = '{name:3s}  {x:12.6f} {y:12.6f} {z:12.6f}\n'.format
         msg = '{:d}\n'.format(self.natom)
         msg += '{0:s}\n'.format(str(self.comment))
@@ -105,9 +137,9 @@ class GeoIo(Geometry):
                     _, tmp, x, y, z = line.split()
                     self.indexes.append(int(tmp) - 1)
                     coords.append([float(x), float(y), float(z)])
-                if supercell and k > 1 + natom:
-                    self.origin = [float(x) for x in line.split()]
                 if supercell and k > 2 + natom:
+                    self.origin = [float(x) for x in line.split()]
+                if supercell and k > 3 + natom:
                     self.lattice.append([float(x) for x in line.split()])
         self.coords = np.array(coords)
         self.natom = natom
