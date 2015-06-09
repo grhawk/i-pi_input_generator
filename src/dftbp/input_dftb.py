@@ -15,6 +15,7 @@ dftb+ code.
 """
 
 import os
+from dftbp.dftb_data import DftbData
 # from libs.geometry import Geometry as Structure
 
 # Try determining the version from git:
@@ -85,18 +86,35 @@ class InputDftb(dict):
         for k, v in default_prms.items():
             self.add_keyword(k, v)
 
-
         self._set_atoms_property(Geometry, parameters_set)
 
-
-
     def _set_atoms_property(self, Geometry, parameters_set):
-        print(type(Geometry))
-        # self.add_keyword('Hamiltonian_HubbardDerivs_', '')
-        for atype in Geometry.specienames:
-            self.add_keyword('Hamiltonian_HubbardDerivs_{}'.format(atype), -0.12)
+        """Private method to retrieve the data per atom/parameters_set.
 
-        pass
+        This method provide the data bind to the parameters set.
+
+        Args:
+            Geometry: geometry object as defined in the respective class under
+                    the libs module.
+            parameters_set: name of the parameters you need the data
+
+        """
+        data = DftbData(parameters_set)
+
+        for atype in Geometry.specienames:
+            self.add_keyword('Hamiltonian_MaxAngularMomentum_{}'.format(atype),
+                             data.find_data_per_atom(atype,
+                                                     'max_angular_momentum'))
+
+        isThirdOrder = 'Hamiltonian_ThirdOrder' in self and \
+            self['Hamiltonian_ThirdOrder'] == 'Yes'
+        isThirdOrderFull = 'Hamiltonian_ThirdOrderFull' in self and \
+            self['Hamiltonian_ThirdOrderFull'] == 'Yes'
+        if isThirdOrder or isThirdOrderFull:
+            for atype in Geometry.specienames:
+                self.add_keyword('Hamiltonian_HubbardDerivs_{}'.format(atype),
+                                 data.find_data_per_atom(atype,
+                                                         'hubbard_derivs'))
 
     def write(self):
         """This method has been mostly copied from the ASE package.
