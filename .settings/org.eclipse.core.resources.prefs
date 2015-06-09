@@ -5,6 +5,7 @@ encoding//lib/libs/io_geo.py=utf-8
 encoding//lib/paramDFTB.py=utf-8
 encoding//src/dftbp/dftb_data.py=utf-8
 encoding//src/dftbp/input_dftb.py=utf-8
+encoding//src/ipi/input_ipi.py=utf-8
 encoding//src/libs/filetype.py=utf-8
 encoding//src/libs/geometry.py=utf-8
 encoding//src/libs/io_geo.py=utf-8
