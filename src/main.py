@@ -39,22 +39,18 @@ Long multiline description.
 #     git_v = 'Not Yet Tagged!'
 
 
-# To test the dftbp module
-# print('TEST')
-# from dftbp import input_dftb
-# test = dftbp.input_dftb.InputDftb()
-# test.add_keyword('Port', 192, 'Driver', 'IPI')
-# print(dftbp.input_dftb.__version__)
-# print('ciao')
-
 # To test the libs Module
 from libs.io_geo import GeoIo
-
 geo = GeoIo()
 geo.gen_read('../example/test.gen')
-print(geo.xyz_write())
-print(geo.gen_write())
+# print(geo.xyz_write())
+# print(geo.gen_write())
 
-# geo = Xyz()
+# To test the dftbp module
+print('TEST')
+from dftbp import input_dftb
+test = input_dftb.InputDftb(geo, 'kkk/3ob')
+test.add_keyword('Port', 192, 'Driver', 'IPI')
+print(test.write())
+print('ciao')
 
-# print(geo.__version__)
