@@ -14,6 +14,9 @@ hsd format. The output of that method can be used directly as input for the
 dftb+ code.
 """
 
+import os
+# from libs.geometry import Geometry as Structure
+
 # Try determining the version from git:
 try:
     import subprocess
@@ -23,7 +26,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-02"
+__updated__ = "2015-06-09"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -48,6 +51,13 @@ class InputDftb(dict):
     Adding an underscore at the end of a key will open a curly bracket in the
     hsd format.
 
+    Args:
+        Geometry: is a geometry class defined in the libs module
+        parameters_folder: absolute path to the folder containing the parameters
+        parameters_set: name of the parameters set to be used. If None the
+                    parameters set is extracted as the last directory in the
+                    parameters_folder
+
     Note:
         The default keywords have to be defined in the *string* format as
         described in the class docstring and are contained in the
@@ -55,14 +65,17 @@ class InputDftb(dict):
 
     """
 
-    def __init__(self, *args, **kw):
-        super().__init__(*args, **kw)
+    def __init__(self, Geometry, parameters_folder, parameters_set=None):
+        super().__init__()
+
+        if not parameters_set:
+            parameters_set = os.path.basename(parameters_folder)
 
         default_prms = dict(
             Hamiltonian_='DFTB',
             Driver_='IPI',
             Hamiltonian_SlaterKosterFiles_='Type2FileNames',
-            Hamiltonian_SlaterKosterFiles_Prefix='slako_dir',
+            Hamiltonian_SlaterKosterFiles_Prefix=parameters_folder,
             Hamiltonian_SlaterKosterFiles_Separator='"-"',
             Hamiltonian_SlaterKosterFiles_Suffix='".skf"',
             Hamiltonian_SCC='No',
@@ -70,7 +83,20 @@ class InputDftb(dict):
         )
 
         for k, v in default_prms.items():
-            super().__setitem__(k, v)
+            self.add_keyword(k, v)
+
+
+        self._set_atoms_property(Geometry, parameters_set)
+
+
+
+    def _set_atoms_property(self, Geometry, parameters_set):
+        print(type(Geometry))
+        # self.add_keyword('Hamiltonian_HubbardDerivs_', '')
+        for atype in Geometry.specienames:
+            self.add_keyword('Hamiltonian_HubbardDerivs_{}'.format(atype), -0.12)
+
+        pass
 
     def write(self):
         """This method has been mostly copied from the ASE package.
@@ -144,7 +170,13 @@ class InputDftb(dict):
         """
         key = self._make_string_keyword(keyword, parents)
 
-        if key in self.keys(): raise AlreadyExistingKeyword(key, value)
+        # If parents are not existing, add them before to add the keyword
+        keys = key.split('_')
+        keyw = ''
+        for k in keys[:-1]:
+            keyw += '{}_'.format(k)
+            if keyw not in self.keys():
+                super().__setitem__(keyw, '')
 
         super().__setitem__(key, value)
 
