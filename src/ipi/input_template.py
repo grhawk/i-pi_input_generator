@@ -48,7 +48,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-11"
+__updated__ = "2015-06-12"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -115,3 +115,15 @@ class InputTemplate(object):
             temperature='./system/ensemble/temperature',
             timestep='./system/ensemble/timestep'
         )
+
+    def _set(self, key, value):
+        tags = self.input_xml.findall(self.index[key])
+        if len(tags) > 1:
+            print('Troppi tag con lo stesso nome')
+            exit()
+        if not isinstance(value, str):
+            print('Value is not str')
+            exit()
+        tags[0].text = value
+
+

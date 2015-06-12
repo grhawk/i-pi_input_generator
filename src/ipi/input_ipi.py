@@ -37,6 +37,7 @@ Attributes:
 
 """
 
+import xml.etree.ElementTree as etree
 from input_template import InputTemplate
 import sys
 
@@ -50,7 +51,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-11"
+__updated__ = "2015-06-12"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -67,24 +68,70 @@ class InputIpi(InputTemplate):
         self.prop_dict = {}
 
     def set(self, prop, val):
-        self.prop_dict[prop] = val
+        self.options[prop] = val
 
-    def temp(self, prop):
-        if 'rem' in prop:
-            del(prop['rem'])
-            del(prop['maxtemperature'])
-            del(prop['mintemperature'])
-            del(prop['number_of_replica'])
+    def _set_rem(self):
+        rem = self.options.pop('rem')
+        assert(rem.lower() == 'yes')
+#        maxtemp = self.options.pop('maxtemperature')
+#        mintemp = self.options.pop('mintemperature')
+#        nreps = self.options.pop('number_of_replica')
+#        rstride = self.options.pop('rem_stride')
+        maxtemp = 100; mintemp = 100; nreps = 50; rstride = 10
+        self._rem_input(maxtemp, mintemp, nreps, rstride)
+
+    def _rem_input(self, maxtemp, mintemp, nreps, rstride):
+        temp_list = [300.0, 513.00, 1500.14]
+        rem = etree.SubElement(self.input_xml, 'paratemp')
+        rtemp = etree.SubElement(rem, 'temp_list')
+        stride = etree.SubElement(rem, 'stride')
+        rtemp.set('units', 'kelvin')
+        print(temp_list)
+        rtemp_list = ', '.join([str(x) for x in temp_list])
+        rtemp.text = '[' + rtemp_list + ']'
+        stride.text = ' {:5d} '.format(50)
+
+    def indent(self, elem, level=0):
+        i = "\n" + level * "  "
+        if len(elem):
+            if not elem.text or not elem.text.strip():
+                elem.text = i + "  "
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+            for elem in elem:
+                self.indent(elem, level + 1)
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+        else:
+            if level and (not elem.tail or not elem.tail.strip()):
+                elem.tail = i
+
+
+    def create_input(self):
+        if 'rem' in self.options and self.options['rem'] == 'yes':
+            self._set_rem()
+            # del(self.options['maxtemperature'])
+            # del(self.options['mintemperature'])
+            # del(self.options['number_of_replica'])
             print('Using REM')
-
-        for k, v in prop:
-            if k not in self.index:
-                print('Problem')
+        for k, v in self.options.items():
+            if k not in self.index.keys():
+                print('Problem', k)
                 sys.exit()
+            print(k, v)
+            self._set(k, str(v))
+
+    def _print(self):
+        self.indent(self.input_xml)
+        etree.dump(self.input_xml)
+
+
+print(dict)
 
 
 if __name__ == '__main__':
     test = InputIpi()
     test.set('rem', 'yes')
-    print(test.prop_dict)
-
+    test.set('temperature', 300)
+    test.create_input()
+    test._print()
