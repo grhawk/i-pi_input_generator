@@ -49,7 +49,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-09"
+__updated__ = "2015-06-12"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -76,6 +76,14 @@ def is_port_free(port):
         port: the number of the port you want to check.
 
     """
-    return port in port_for.available_good_ports()
+    cond = int(port) in port_for.available_good_ports()
+    return cond
 
     return
+
+
+
+if __name__ == '__main__':
+
+    print(giveme_a_port())
+    print(is_port_free(28991))

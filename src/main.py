@@ -7,38 +7,14 @@
 # Creation: Jun 12, 2015
 #
 
-"""Example Google style docstrings.
-
-This module demonstrates documentation as specified by the `Google Python
-Style Guide`_. Docstrings may extend over multiple lines. Sections are created
-with a section header and a colon followed by a block of indented text.
-
-Example:
-  Examples can be given using either the ``Example`` or ``Examples``
-  sections. Sections support any reStructuredText formatting, including
-  literal blocks::
-
-      $ python example_google.py
-
-Section breaks are created by simply resuming unindented text. Section breaks
-are also implicitly created anytime a new section starts.
-
-Attributes:
-  module_level_variable (int): Module level variables may be documented in
-    either the ``Attributes`` section of the module docstring, or in an
-    inline docstring immediately following the variable.
-
-    Either form is acceptable, but the two should not be mixed. Choose
-    one convention to document module level variables and be consistent
-    with it.
-
-.. _Google Python Style Guide:
-   http://google-styleguide.googlecode.com/svn/trunk/pyguide.html
+"""
+Main file
 
 """
 
 import argparse
-
+import ports.ports_master as portsMaster
+import ipi.input_ipi as ipi
 
 # Try determining the version from git:
 try:
@@ -59,35 +35,138 @@ __status__ = 'development'
 
 
 def main():
-    pass
+    args = _validate_args(_parser())
+
+    # Write data to the ipi input
+    ipiI = ipi.InputIpi()
+    for k, v in args.items():
+        ipiI.set(k, v)
+
+    print(ipiI.create_input())
+
+
+
+def _validate_args(args):
+    notNone_option = {}
+    for k, v in args.items():
+        if v is not None:
+            notNone_option[k] = v
+            if isinstance(v, int) or isinstance(v, float):
+                if not _ispositive(v):
+                    raise(ValueError('The value of ' + str(k) + ' must be positive!'))
+
+    if 'port' in notNone_option:
+        port = notNone_option['port']
+        if not portsMaster.is_port_free(port):
+            raise(ValueError('The port choosen ({}) is not available. Do not specify any port!'.format(port)))
+
+    else:
+        port = portsMaster.giveme_a_port()
+
+    if notNone_option['mode'].lower() == 'rem':
+        c1 = 'Tmin' not in notNone_option
+        c2 = 'Tmax' not in notNone_option
+        c3 = 'nrep' not in notNone_option
+        c4 = 'rstride' not in notNone_option
+
+        if c1 or c2 or c3 or c4:
+                raise(RuntimeError('When you want to do rem, you have to specify everyting!'))
+
+        notNone_option.pop('mode')
+        notNone_option['rem'] = 'yes'
+
+    return notNone_option
+
+
+def _ispositive(number):
+    return number > 0
+
 
 def _parser():
     parser = argparse.ArgumentParser(
         description='Helps in build REM@DFTB input files.')
 
-    parser.add_argument('Tmin',
-                        action='store',
-                        type=float,
-                        help='Smallest REM temperature')
+    rem = parser.add_argument_group('REM', 'REM variables')
+    rem.add_argument('--Tmin',
+                           action='store',
+                           type=float,
+                           help='Smallest REM temperature')
 
-    parser.add_argument('Tmax',
-                        action='store',
-                        type=float,
-                        help='Highest REM temperature')
+    rem.add_argument('--Tmax',
+                           action='store',
+                           type=float,
+                           help='Highest REM temperature')
 
-    parser.add_argument('N',
-                        action='store',
-                        type=int,
-                        help='Number of replicas')
+    rem.add_argument('--nrep',
+                           action='store',
+                           type=int,
+                           help='Number of replicas')
 
-    parser.add_argument('--debug',
-                        action='store_true',
-                        dest='debug_flag',
-                        default=False,
-                        help='be more verbose')
+    rem.add_argument('-rt', '--rstride',
+                     action='store',
+                     type=int,
+                     help='Steps between two replica exchanging attemps')
 
+    ensemble = parser.add_argument_group('Ensemble',
+                                         'Parameters for the ensamble')
+    ensemble.add_argument('--temperature',
+                          action='store',
+                          default=300.0,
+                          type=float,
+                          help='Temperature if not REM simulation')
+    ensemble.add_argument('--timestep',
+                          action='store',
+                          default=0.5,
+                          type=float,
+                          help='Time step')
 
-    return parser.parse_args()
+    initialize = parser.add_argument_group('Initialization',
+                                           'Parameters to initialize the system')
+    initialize.add_argument('xyzfile',
+                            action='store',
+                            type=str,
+                            help='Geometry structure in xyz file')
+    initialize.add_argument('--initial_temperature',
+                            action='store',
+                            default=300.0,
+                            type=float,
+                            help='Initial temperature for the simulation')
+
+    ffsocket = parser.add_argument_group('FFSOCKET',
+                                         'Sockets parameters')
+    ffsocket.add_argument('--address',
+                          action='store',
+                          default='192.168.0.101',
+                          type=str,
+                          help='Ip address of the server')
+    ffsocket.add_argument('--port',
+                          action='store',
+                          default=None,
+                          type=int,
+                          help='Port used by the socket. Leave it and I will try to find one')
+    ffsocket.add_argument('--slots',
+                          action='store',
+                          default=2,
+                          type=str,
+                          help='Number of DFTB instance expected')
+    ffsocket.add_argument('--timeout',
+                          action='store',
+                          default=60,
+                          type=int,
+                          help='Seconds to wait until consider a dftb instance DEAD!')
+
+    general = parser.add_argument_group('General Parameters',
+                                        'Parameters for the simulation')
+    general.add_argument('--nstep',
+                         action='store',
+                         default=50000)
+    general.add_argument('--mode',
+                         action='store',
+                         default='md',
+                         choices=['md', 'rem'],
+                         help='You can run REM or normal MD')
+
+    return vars(parser.parse_args())
 
 if __name__ == '__main__':
     main()

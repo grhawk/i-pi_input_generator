@@ -112,10 +112,11 @@ class InputTemplate(object):
             slots='./ffsocket/slots',
             timeout='./ffsocket/timeout',
             # SYSTEM
-            xyzfile='./system/initialize/xyzfile',
-            init_temperature='./system/initialize/velocities',
+            xyzfile='./system/initialize/file',
+            initial_temperature='./system/initialize/velocities',
             temperature='./system/ensemble/temperature',
-            timestep='./system/ensemble/timestep'
+            timestep='./system/ensemble/timestep',
+            nstep='./total_steps',
         )
 
     def _set(self, key, value):
@@ -134,6 +135,7 @@ class InputTemplate(object):
             with that address otherwise exception will be raised.
 
         """
+        print(self.index[key])
         tags = self.input_xml.findall(self.index[key])
         if len(tags) > 1:
             print('Troppi tag con lo stesso nome')
@@ -141,7 +143,12 @@ class InputTemplate(object):
         if not isinstance(value, str):
             print('Value is not str')
             exit()
-        tags[0].text = value
+        try:
+            tags[0].text = value
+        except IndexError:
+            sys.stderr.write('Problems with tags: {} with value: {}\n'.format(
+                self.index[key], value))
+            raise(IndexError)
 
     def _add(self, parents, tagname):
         """Add a new tag under a parents tag.
@@ -186,6 +193,7 @@ class InputIpi(InputTemplate):
         Args:
             key: name of the property
             value: new value for the key property
+
         """
         self._options[key] = value
 
@@ -203,10 +211,10 @@ class InputIpi(InputTemplate):
         rem = self._options.pop('rem')
         if rem.lower() == 'yes':
             try:
-                maxtemp = self._options.pop('maxtemperature')
-                mintemp = self._options.pop('mintemperature')
-                nreps = self._options.pop('number_of_replica')
-                rstride = self._options.pop('rem_stride')
+                maxtemp = self._options.pop('Tmax')
+                mintemp = self._options.pop('Tmin')
+                nreps = self._options.pop('nrep')
+                rstride = self._options.pop('rstride')
             except KeyError:
                 raise(MissingKeywordError(
                     'You miss some REM keyword'))
@@ -264,16 +272,19 @@ class InputIpi(InputTemplate):
         """Create the final input and return it as a string.
 
         """
+        print(self._options)
         if 'rem' in self._options:
                 self._set_rem()
 
         for k, v in self._options.items():
+            sys.stderr.write('Setting: {:50s} -> {:50s}\n'.format(k, str(v)))
             if k not in self.index.keys():
-                print('Problem', k)
+                raise(IndexError(
+                    'Keyword: {} not found in the index'.format(k)))
                 sys.exit()
             self._set(k, str(v))
             self.indent(self.input_xml)
-            return etree.dump(self.input_xml)
+        return etree.dump(self.input_xml)
 
 
 class MissingKeywordError(Exception):
