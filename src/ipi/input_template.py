@@ -113,7 +113,8 @@ class InputTemplate(object):
             xyzfile='./system/initialize/xyzfile',
             init_temperature='./system/initialize/velocities',
             temperature='./system/ensemble/temperature',
-            timestep='./system/ensemble/timestep'
+            timestep='./system/ensemble/timestep',
+            nstep='./system/total_steps'
         )
 
     def _set(self, key, value):
