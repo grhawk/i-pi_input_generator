@@ -7,36 +7,13 @@
 # Creation: Jun 9, 2015
 #
 
-"""Example Google style docstrings.
+"""This module take care of the ipi input.
 
-This module demonstrates documentation as specified by the `Google Python
-Style Guide`_. Docstrings may extend over multiple lines. Sections are created
-with a section header and a colon followed by a block of indented text.
-
-Example:
-  Examples can be given using either the ``Example`` or ``Examples``
-  sections. Sections support any reStructuredText formatting, including
-  literal blocks::
-
-      $ python example_google.py
-
-Section breaks are created by simply resuming unindented text. Section breaks
-are also implicitly created anytime a new section starts.
-
-Attributes:
-  module_level_variable (int): Module level variables may be documented in
-    either the ``Attributes`` section of the module docstring, or in an
-    inline docstring immediately following the variable.
-
-    Either form is acceptable, but the two should not be mixed. Choose
-    one convention to document module level variables and be consistent
-    with it.
-
-.. _Google Python Style Guide:
-   http://google-styleguide.googlecode.com/svn/trunk/pyguide.html
+This module provide a default set of keywords and values for the ipi file.
+There is some method helping in changing some of the default values such as
+temperature, time_step etc.
 
 """
-
 import xml.etree.ElementTree as etree
 import sys
 
@@ -59,9 +36,23 @@ __status__ = 'development'
 
 
 class InputTemplate(object):
+    """Contains a default version for the ipi input file.
+
+    Only the tags whose value is in CAPITALS can be actually changed by
+    the _set method. All the rest of the file will be printed as such.
+
+    If you want to be able to easily modify more tags you can add the tag
+    address and a nickname in the self.index dictionary. Consider that the
+    address has to start with a . and that each grandparants of the tag has me
+    separeted by a '/' symbol.
+
+    You are also allowed to modify directly the input if you require a completly
+    different system.
+
+    """
     def __init__(self):
         self.input_template = """<simulation verbosity='medium' mode='md'>
-  <total_steps> 6000000 </total_steps>
+  <total_steps> NSTEPS </total_steps>
   <ffsocket mode="inet" name='dftbuff'>
     <address> ADDRESS </address>
     <port> PORT </port>
@@ -128,6 +119,21 @@ class InputTemplate(object):
         )
 
     def _set(self, key, value):
+        """Change the value of the tag in the ipi-input.
+
+        Since the way to find a tag in an xml environment is not straightforward
+        and error-prone. I am using this method to check that everything is fine
+        while changing the value.
+
+        Args:
+            key: the tag object whose value must change
+            value: the new value for the key tag object
+
+        Note:
+            The value has to be an integer and there have to be only one tag
+            with that address otherwise exception will be raised.
+
+        """
         tags = self.input_xml.findall(self.index[key])
         if len(tags) > 1:
             print('Troppi tag con lo stesso nome')
@@ -137,42 +143,109 @@ class InputTemplate(object):
             exit()
         tags[0].text = value
 
+    def _add(self, parents, tagname):
+        """Add a new tag under a parents tag.
+
+        This method is not yet implemented but will be soon... probably ;)
+
+        """
+        raise(NotImplementedError(
+            'The _add method is not yet implemented... sorry'))
+
+    def _del(self, tagname):
+        """Delete a tag from the input_xml tree.
+
+        This method is not yet implemented but will be soon... maybe ;)
+
+        """
+        raise(NotImplementedError(
+            'The _del method is not yet implemented... too bad!'))
+
 
 class InputIpi(InputTemplate):
+    """To generate an (hopfully) working ipi input.
+
+    This class is the one that has to be actually used to generate the input
+    file. It inherits the template file as an xml object from InputTemplate.
+    Provide several public method to modify the template object.
+
+    The self._options dictionary will provide all the input parameter that need
+    to be changed in the xml. There are method to manage the _options
+    dictionary.
+
+    """
     def __init__(self):
         super().__init__()
-        self.options = dict(
+        self._options = dict(
             rem='no'
         )
-        self.prop_dict = {}
 
-    def set(self, prop, val):
-        self.options[prop] = val
+    def set(self, key, value):
+        """Set (add/edit) value in the _options dictionary in a safe way.
+
+        Args:
+            key: name of the property
+            value: new value for the key property
+        """
+        self._options[key] = value
 
     def _set_rem(self):
-        rem = self.options.pop('rem')
+        """Take of care of setting everything if you want to run a rem.
+
+        When running a rem there are few things that needs to be done:
+        determining the temperature of each replica and add a few tags in the
+        xml template. This method takes care of all of those things.
+
+        Todo:
+            This method should use the _add method of the template class...
+
+        """
+        rem = self._options.pop('rem')
         if rem.lower() == 'yes':
-#        maxtemp = self.options.pop('maxtemperature')
-#        mintemp = self.options.pop('mintemperature')
-#        nreps = self.options.pop('number_of_replica')
-#        rstride = self.options.pop('rem_stride')
-            maxtemp = 100; mintemp = 100; nreps = 50; rstride = 10
-            self._rem_input(maxtemp, mintemp, nreps, rstride)
+            try:
+                maxtemp = self._options.pop('maxtemperature')
+                mintemp = self._options.pop('mintemperature')
+                nreps = self._options.pop('number_of_replica')
+                rstride = self._options.pop('rem_stride')
+            except KeyError:
+                raise(MissingKeywordError(
+                    'You miss some REM keyword'))
 
-    def _rem_input(self, maxtemp, mintemp, nreps, rstride):
+            temp_list = self._compute_rem_temperature(maxtemp, mintemp, nreps)
 
+            rem = etree.SubElement(self.input_xml, 'paratemp')
+            rtemp = etree.SubElement(rem, 'temp_list')
+            stride = etree.SubElement(rem, 'stride')
+            self.input_xml.set('mode', 'paratemp')
+            rtemp.set('units', 'kelvin')
+            rtemp_list = ', '.join([str(x) for x in temp_list])
+            rtemp.text = '[' + rtemp_list + ']'
+            stride.text = ' {:5d} '.format(rstride)
+
+    def _compute_rem_temperature(self, maxtemp, mintemp, nreps):
+        """Estimates the best temperature for the replica.
+
+        This subroutine uses the RemTemperatures code to estimates the best
+        temperature to be used in a given temperature range and a given number
+        of replicas.
+
+        Args:
+            maxtemp: temperature of the highest replica
+            mintemp: temperature of the lowest replica
+            nreps: number of replicas
+
+        Todo: implement something serius... :)
+        """
         temp_list = [300.0, 513.00, 1500.14]
-
-        rem = etree.SubElement(self.input_xml, 'paratemp')
-        rtemp = etree.SubElement(rem, 'temp_list')
-        stride = etree.SubElement(rem, 'stride')
-        self.input_xml.set('mode', 'paratemp')
-        rtemp.set('units', 'kelvin')
-        rtemp_list = ', '.join([str(x) for x in temp_list])
-        rtemp.text = '[' + rtemp_list + ']'
-        stride.text = ' {:5d} '.format(50)
+        return temp_list
 
     def indent(self, elem, level=0):
+        """This method has been copied from internet to prettify the xml output.
+
+        Args:
+            elem: the xml object to be prettified
+            level: ...bo... :)
+        """
         i = "\n" + level * "  "
         if len(elem):
             if not elem.text or not elem.text.strip():
@@ -188,17 +261,28 @@ class InputIpi(InputTemplate):
                 elem.tail = i
 
     def create_input(self):
-        if 'rem' in self.options:
+        """Create the final input and return it as a string.
+
+        """
+        if 'rem' in self._options:
                 self._set_rem()
 
-        for k, v in self.options.items():
+        for k, v in self._options.items():
             if k not in self.index.keys():
                 print('Problem', k)
                 sys.exit()
             self._set(k, str(v))
             self.indent(self.input_xml)
-            etree.dump(self.input_xml)
+            return etree.dump(self.input_xml)
 
+
+class MissingKeywordError(Exception):
+    """This exception is used when keyword are inconsistent.
+
+    """
+    def __init__(self, msg):
+        sys.stderr.write(msg)
+        sys.exit()
 
 if __name__ == '__main__':
     test = InputIpi()
