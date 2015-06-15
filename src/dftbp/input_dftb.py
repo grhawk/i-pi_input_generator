@@ -27,7 +27,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-09"
+__updated__ = "2015-06-15"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -74,7 +74,7 @@ class InputDftb(dict):
 
         default_prms = dict(
             Hamiltonian_='DFTB',
-            Driver_='IPI',
+            Driver_='Ipi',
             Hamiltonian_SlaterKosterFiles_='Type2FileNames',
             Hamiltonian_SlaterKosterFiles_Prefix=parameters_folder,
             Hamiltonian_SlaterKosterFiles_Separator='"-"',
@@ -86,9 +86,10 @@ class InputDftb(dict):
         for k, v in default_prms.items():
             self.add_keyword(k, v)
 
-        self._set_atoms_property(Geometry, parameters_set)
+        self.Geometry = Geometry
+        self.parameters_set = parameters_set
 
-    def _set_atoms_property(self, Geometry, parameters_set):
+    def _set_atoms_property(self):
         """Private method to retrieve the data per atom/parameters_set.
 
         This method provide the data bind to the parameters set.
@@ -99,6 +100,8 @@ class InputDftb(dict):
             parameters_set: name of the parameters you need the data
 
         """
+        Geometry = self.Geometry
+        parameters_set = self.parameters_set
         data = DftbData(parameters_set)
 
         for atype in Geometry.specienames:
@@ -124,6 +127,8 @@ class InputDftb(dict):
         brackets.
 
         """
+        self._set_atoms_property()
+
         input_str = ''
         previous_key = 'dummy_'
         myspace = ' '
