@@ -25,7 +25,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-11"
+__updated__ = "2015-06-15"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -63,21 +63,23 @@ class GeoIo(Geometry):
         coords = []
         with open(filepath) as f:
             for k, line in enumerate(f):
-                if BannerLines().xyz.match(line):  # Check if first line is an
-                                                # integer.
+                # Check if first line is an integer.
+                if BannerLines().xyz.match(line):
                     natom = int(line)
                     frame += 1
-                    if frame > 1: raise IsTrajectory(filepath)  # If the file
-                                                # contains more than one line
-                                                # with one only integer then the
-                                                # file is considered a
-                                                # trajectory
+                    # If the file contains more than one line with one only
+                    # integer then the file is considered a trajectory
+
+                    if frame > 1: raise IsTrajectory(filepath)
+
                 if k == 1: comment = line  # The second line is the comment
                 if k > 1:
-                    tmp, x, y, z = line.split()  # All the following line will
-                                                # contains all the atom coords.
+                    # All the following line will
+                    # contains all the atom coords.
+                    tmp, x, y, z = line.split()
                     atype.append(tmp)
                     coords.append([float(x), float(y), float(z)])
+
         self.coords = np.array(coords)
         self.specienames = list(set(atype))
         self.nspecie = len(self.specienames)
@@ -143,15 +145,17 @@ class GeoIo(Geometry):
                     cluster = mode == 'C'
                     crystal = mode == 'F'
                     if crystal:
-                        raise NotImplementedError(# The fractional coordinates
-                                                    # are not implemented!
+                        # The fractional coordinates
+                        # are not implemented!
+                        raise NotImplementedError(
                             'F is not usable with this script')
-                    if cluster or supercell: pass  # Just to avoid error style
-                                                # error and to be consistent
+                    # Just to avoid error style error and to be consistent
+                    if cluster or supercell: pass
                     frame += 1
-                    if frame > 1: raise IsTrajectory(filepath)  # If there are
-                                                # more lines with the "banner"
-                                                # format raise the error
+                    # If there are more lines with the "banner" format
+                    # raise the error
+                    if frame > 1: raise IsTrajectory(filepath)
+
                 if k == 1: self.specienames = line.split()
                 if k > 1 and k < 2 + natom:
                     _, tmp, x, y, z = line.split()
