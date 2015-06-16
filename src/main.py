@@ -13,8 +13,9 @@ Main file
 """
 
 import sys
-
-sys.path.append('./ports/port-for/')
+import os
+heredir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(heredir, 'ports/port-for/'))
 
 import argparse
 import ports.ports_master as portsMaster
@@ -33,7 +34,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-15"
+__updated__ = "2015-06-16"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'

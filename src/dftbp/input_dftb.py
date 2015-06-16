@@ -73,8 +73,10 @@ class InputDftb(dict):
             parameters_set = os.path.basename(parameters_folder)
 
         default_prms = dict(
-            Hamiltonian_='DFTB',
+            Geometry_='GenFormat',
+            Geometry_empty=Geometry.gen_write(),
             Driver_='Ipi',
+            Hamiltonian_='DFTB',
             Hamiltonian_SlaterKosterFiles_='Type2FileNames',
             Hamiltonian_SlaterKosterFiles_Prefix=parameters_folder,
             Hamiltonian_SlaterKosterFiles_Separator='"-"',
@@ -87,8 +89,11 @@ class InputDftb(dict):
             Hamiltonian_DampXH='Yes',
             Hamiltonian_ThirdOrderFull='Yes',
             Hamiltonian_Filling_='Fermi',
-            Hamiltonian_Filling_Temperature[K]='300',
-            Hamiltonian_KpointsAndWeights
+            Hamiltonian_Filling_Temperature=300,
+            Hamiltonian_KPointsAndWeights_='',
+            Hamiltonian_KPointsAndWeights_empty='.5 .5 .5 1.0',
+            Hamiltonian_Dispersion_='LennardJones',
+            Hamiltonian_Dispersion_Parameters='UFFParameters{}'
         )
 
         for k, v in default_prms.items():
@@ -96,13 +101,6 @@ class InputDftb(dict):
 
         self.Geometry = Geometry
         self.parameters_set = parameters_set
-
-    def _set_geometry(self):
-        msg = 'Geometry = GenFormat {\n'
-        msg += self.Geometry.gen_write()
-        msg += '\n'
-        msg += '}\n'
-        return msg
 
     def _set_atoms_property(self):
         """Private method to retrieve the data per atom/parameters_set.
@@ -144,7 +142,7 @@ class InputDftb(dict):
         """
         self._set_atoms_property()
 
-        input_str = self._set_geometry()
+        input_str = ''
         previous_key = 'dummy_'
         myspace = ' '
         for key, value in sorted(self.items()):
