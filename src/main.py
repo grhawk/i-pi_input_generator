@@ -15,6 +15,8 @@ Main file
 import argparse
 import ports.ports_master as portsMaster
 import ipi.input_ipi as ipi
+import dftbp.input_dftb as dftb
+from libs.io_geo import GeoIo
 
 # Try determining the version from git:
 try:
@@ -26,13 +28,17 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-12"
+__updated__ = "2015-06-15"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
 __email__ = 'riccardo.petraglia@gmail.com'
 __status__ = 'development'
 
+
+config = dict(
+    SKfileLocation='/home/petragli/SKfiles/3ob'
+)
 
 def main():
     args = _validate_args(_parser())
@@ -42,16 +48,28 @@ def main():
     for k, v in args.items():
         ipiI.set(k, v)
 
-    print(ipiI.create_input())
+    # print(ipiI.create_input())
 
+    # Write data to the dftb input
+    geo = GeoIo()
+    geo.xyz_read(args['xyzfile'])
+    print(geo.natom)
+    dftbpI = dftb.InputDftb(geo, config['SKfileLocation'])
+    dftbpI.add_keyword('Driver_Address', args['address'])
+    dftbpI.add_keyword('Driver_Port', args['port'])
+    dftbpI.add_keyword('Driver_isUnix', args['isUnix'])
+    dftbpI.add_keyword('Hamiltonian_ThirdOrderFull', 'Yes')
+
+    print(dftbpI.write())
 
 
 def _validate_args(args):
     notNone_option = {}
     for k, v in args.items():
         if v is not None:
+            print(k, v)
             notNone_option[k] = v
-            if isinstance(v, int) or isinstance(v, float):
+            if (isinstance(v, int) or isinstance(v, float)) and not (v == False or v == True):
                 if not _ispositive(v):
                     raise(ValueError('The value of ' + str(k) + ' must be positive!'))
 
@@ -59,9 +77,18 @@ def _validate_args(args):
         port = notNone_option['port']
         if not portsMaster.is_port_free(port):
             raise(ValueError('The port choosen ({}) is not available. Do not specify any port!'.format(port)))
-
     else:
-        port = portsMaster.giveme_a_port()
+        notNone_option['port'] = portsMaster.giveme_a_port()
+
+    if 'title' not in notNone_option:
+        notNone_option['title'] = notNone_option['xyzfile']
+
+    if notNone_option['isUnix']:
+        notNone_option['isUnix'] = 'Yes'
+    else:
+        notNone_option['isUnix'] = 'No'
+        notNone_option['address'] = notNone_option['title']
+
 
     if notNone_option['mode'].lower() == 'rem':
         c1 = 'Tmin' not in notNone_option
@@ -154,6 +181,11 @@ def _parser():
                           default=60,
                           type=int,
                           help='Seconds to wait until consider a dftb instance DEAD!')
+    ffsocket.add_argument('--isUnix', '--isunix',
+                          action='store_true',
+                          default=False,
+                          dest='isUnix',
+                          help='Select this option if you want to open a Unix Socket!.')
 
     general = parser.add_argument_group('General Parameters',
                                         'Parameters for the simulation')
@@ -165,6 +197,11 @@ def _parser():
                          default='md',
                          choices=['md', 'rem'],
                          help='You can run REM or normal MD')
+
+    general.add_argument('--title',
+                         action='store',
+                         default=None,
+                         help='Set a title for the jobs otherwise it will be the name of the geometry file')
 
     return vars(parser.parse_args())
 

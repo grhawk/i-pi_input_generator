@@ -73,6 +73,8 @@ class InputDftb(dict):
             parameters_set = os.path.basename(parameters_folder)
 
         default_prms = dict(
+            Geometry_='GenFormat',
+            Geometry=Geometry.gen_write(),
             Hamiltonian_='DFTB',
             Driver_='Ipi',
             Hamiltonian_SlaterKosterFiles_='Type2FileNames',
