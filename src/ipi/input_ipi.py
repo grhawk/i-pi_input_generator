@@ -27,7 +27,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-12"
+__updated__ = "2015-06-16"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -279,12 +279,23 @@ class InputIpi(InputTemplate):
         for k, v in self._options.items():
             sys.stderr.write('Setting: {:50s} -> {:50s}\n'.format(k, str(v)))
             if k not in self.index.keys():
-                raise(IndexError(
-                    'Keyword: {} not found in the index'.format(k)))
-                sys.exit()
-            self._set(k, str(v))
+                if k == 'mode':
+                    pass
+                elif k == 'isUnix':
+                    if v:
+                        self.input_xml.findall('./ffsocket')[0].set('mode', 'unix')
+                    else:
+                        self.input_xml.findall('./ffsoket')[0].set('mode', 'inet')
+                elif k == 'title':
+                    continue
+                else:
+                    raise(IndexError(
+                        'Keyword: {} not found in the index'.format(k)))
+                    sys.exit()
+            else:
+                self._set(k, str(v))
             self.indent(self.input_xml)
-        return etree.dump(self.input_xml)
+        return etree.tostring(self.input_xml, method='xml', encoding='us-ascii')
 
 
 class MissingKeywordError(Exception):

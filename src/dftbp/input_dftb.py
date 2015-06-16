@@ -70,7 +70,9 @@ class InputDftb(dict):
         super().__init__()
 
         if not parameters_set:
-            parameters_set = os.path.basename(parameters_folder)
+            parameters_set = os.path.basename(os.path.normpath(parameters_folder))
+            print('AAAAAAAAAAAAA', parameters_set)
+
 
         default_prms = dict(
             Geometry_='GenFormat',
@@ -131,6 +133,7 @@ class InputDftb(dict):
                 self.add_keyword('Hamiltonian_HubbardDerivs_{}'.format(atype),
                                  data.find_data_per_atom(atype,
                                                          'hubbard_derivs'))
+                self.add_keyword('Hamiltonian_DampXHExponent', data.find_data_per_method('damp_xh_exponent'))
 
     def write(self):
         """This method has been mostly copied from the ASE package.

@@ -23,7 +23,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-09"
+__updated__ = "2015-06-16"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -57,6 +57,7 @@ class DftbData(object):
                 S=-0.11,
                 O=-0.1575,
             ),
+            damp_xh_exponent=4.0,
             max_angular_momentum=dict(
                 H="s",
                 C="p",
@@ -83,12 +84,17 @@ class DftbData(object):
             data_type: can be hubbard_derivs or max_angular_momentum
 
         """
-        if data_type not in self.prms:
-            raise DataTypeNotFoundError(data_type)
+        self.find_data_per_method(data_type)
         if atype not in self.prms[data_type]:
             raise AtomTypeNotFoundError(atype)
 
         return self.prms[data_type][atype]
+
+    def find_data_per_method(self, data_type):
+        if data_type not in self.prms:
+            raise DataTypeNotFoundError(data_type)
+        return self.prms[data_type]
+
 
 
 class ParametersSetNotFoundError(Exception):

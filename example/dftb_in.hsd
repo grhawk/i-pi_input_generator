@@ -1,54 +1,65 @@
-Geometry = GenFormat { 
-     <<< "PTS_trans_right.gen"
-} 
- 
-Driver = Ipi {
-	Port=pippopluto-port
- 	Host="192.168.100.1"
-	isUnix = No
-	Verbosity = 1
+Driver = Ipi{ 
+   Host = 128.178.136.190 
+   Port = 10673 
+   isUnix = No 
    } 
-
+Geometry = GenFormat{ 
+      20  C
+H C
+    0    2     -7.154260     -7.154260     -7.154260
+    1    1     -6.084260     -6.084260     -6.084260
+    2    1     -7.510930     -7.510930     -7.510930
+    3    1     -7.510930     -7.510930     -7.510930
+    4    1     -7.510930     -7.510930     -7.510930
+    5    2     -1.075910     -1.075910     -1.075910
+    6    1     -0.005910     -0.005910     -0.005910
+    7    1     -1.432580     -1.432580     -1.432580
+    8    1     -1.432580     -1.432580     -1.432580
+    9    1     -1.432580     -1.432580     -1.432580
+   10    2     -3.449580     -3.449580     -3.449580
+   11    1     -2.379580     -2.379580     -2.379580
+   12    1     -3.806240     -3.806240     -3.806240
+   13    1     -3.806240     -3.806240     -3.806240
+   14    1     -3.806240     -3.806240     -3.806240
+   15    2      1.453040      1.453040      1.453040
+   16    1      2.523040      2.523040      2.523040
+   17    1      1.096370      1.096370      1.096370
+   18    1      1.096370      1.096370      1.096370
+   19    1      1.096370      1.096370      1.096370
+ 
+   } 
 Hamiltonian = DFTB{ 
-   ReadInitialCharges = No
-   MaxSCCIterations = 500
    Charge = 0 
    DampXH = Yes 
    DampXHExponent = 4.0 
+   Dispersion = LennardJones{ 
+      Parameters = UFFParameters{} 
+   } 
    Eigensolver = RelativelyRobust{} 
+   Filling = Fermi{ 
+      Temperature = 300 
+   } 
    HubbardDerivs = { 
+      C = -0.1492 
       H = -0.1857 
-      C = -0.1492
-      N = -0.1535
-      S = -0.11
-      O = -0.1575
+   } 
+   KPointsAndWeights = { 
+      .5 .5 .5 1.0 
    } 
    MaxAngularMomentum = { 
-      H = "s" 
-      C = "p"
-      N = "p"
-      S = "d"
-      O = "p"
+      C = p 
+      H = s 
    } 
+   MaxSCCIterations = 500 
+   ReadInitialCharges = No 
    SCC = Yes 
    SlaterKosterFiles = Type2FileNames{ 
-      Prefix = /home/petragli/PTS-QMREM/data/SK-parameters/3ob-1-1/ 
+      Prefix = /home/riccardo/SKfiles/3ob/ 
       Separator = "-" 
       Suffix = ".skf" 
    } 
    ThirdOrderFull = Yes 
-   Filling = Fermi{
-	Temperature[K] = 300
-	}
-   KPointsAndWeights[absolute] = {
-      0.0 0.0 0.0 1.0
-   }
-   Dispersion = LennardJones {
-      Parameters = UFFParameters{}
-   }
 } 
 Options { 
-   WriteResultsTag = No
-   WriteDetailedOut = No
-   WriteBandOut = No
+   WriteResultsTag = Yes  
 } 

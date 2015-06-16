@@ -192,7 +192,7 @@ class GeoIo(Geometry):
         msg += ' '.join(self.specienames) + '\n'
         for i, coord in enumerate(self.coords):
             print(coord[0])
-            msg += gen_format(a=i, b=self.indexes[i],
+            msg += gen_format(a=i, b=self.indexes[i] + 1,
                               x=coord[0], y=coord[0], z=coord[0])
         msg += toappend
         return msg

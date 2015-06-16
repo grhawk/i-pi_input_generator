@@ -43,8 +43,9 @@ __status__ = 'development'
 
 
 config = dict(
-    SKfileLocation='/home/petragli/SKfiles/3ob'
+    SKfileLocation='/home/riccardo/SKfiles/3ob/'
 )
+
 
 def main():
     args = _validate_args(_parser())
@@ -52,21 +53,27 @@ def main():
     # Write data to the ipi input
     ipiI = ipi.InputIpi()
     for k, v in args.items():
+        if k == 'mode': continue
         ipiI.set(k, v)
 
-    # print(ipiI.create_input())
+    with open('ipi_input.xml', 'wb') as ipif:
+        # print(type(ipiI.create_input()))
+        ipif.write(ipiI.create_input())
+
+    print('Written IPI')
 
     # Write data to the dftb input
     geo = GeoIo()
     geo.xyz_read(args['xyzfile'])
     print(geo.natom)
     dftbpI = dftb.InputDftb(geo, config['SKfileLocation'])
-    dftbpI.add_keyword('Driver_Address', args['address'])
+    dftbpI.add_keyword('Driver_Host', args['address'])
     dftbpI.add_keyword('Driver_Port', args['port'])
     dftbpI.add_keyword('Driver_isUnix', args['isUnix'])
     dftbpI.add_keyword('Hamiltonian_ThirdOrderFull', 'Yes')
 
-    print(dftbpI.write())
+    with open('dftb_in.hsd', 'w') as dftbf:
+        dftbf.write(dftbpI.write())
 
 
 def _validate_args(args):
@@ -91,9 +98,9 @@ def _validate_args(args):
 
     if notNone_option['isUnix']:
         notNone_option['isUnix'] = 'Yes'
+        notNone_option['address'] = notNone_option['title']
     else:
         notNone_option['isUnix'] = 'No'
-        notNone_option['address'] = notNone_option['title']
 
 
     if notNone_option['mode'].lower() == 'rem':
