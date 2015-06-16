@@ -27,7 +27,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-15"
+__updated__ = "2015-06-16"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -73,16 +73,22 @@ class InputDftb(dict):
             parameters_set = os.path.basename(parameters_folder)
 
         default_prms = dict(
-            Geometry_='GenFormat',
-            Geometry=Geometry.gen_write(),
             Hamiltonian_='DFTB',
             Driver_='Ipi',
             Hamiltonian_SlaterKosterFiles_='Type2FileNames',
             Hamiltonian_SlaterKosterFiles_Prefix=parameters_folder,
             Hamiltonian_SlaterKosterFiles_Separator='"-"',
             Hamiltonian_SlaterKosterFiles_Suffix='".skf"',
-            Hamiltonian_SCC='No',
-            Hamiltonian_Eigensolver='RelativelyRobust{}'
+            Hamiltonian_SCC='Yes',
+            Hamiltonian_Eigensolver='RelativelyRobust{}',
+            Hamiltonian_ReadInitialCharges='No',
+            Hamiltonian_MaxSCCIterations=500,
+            Hamiltonian_Charge=0,
+            Hamiltonian_DampXH='Yes',
+            Hamiltonian_ThirdOrderFull='Yes',
+            Hamiltonian_Filling_='Fermi',
+            Hamiltonian_Filling_Temperature[K]='300',
+            Hamiltonian_KpointsAndWeights
         )
 
         for k, v in default_prms.items():
@@ -90,6 +96,13 @@ class InputDftb(dict):
 
         self.Geometry = Geometry
         self.parameters_set = parameters_set
+
+    def _set_geometry(self):
+        msg = 'Geometry = GenFormat {\n'
+        msg += self.Geometry.gen_write()
+        msg += '\n'
+        msg += '}\n'
+        return msg
 
     def _set_atoms_property(self):
         """Private method to retrieve the data per atom/parameters_set.
@@ -131,7 +144,7 @@ class InputDftb(dict):
         """
         self._set_atoms_property()
 
-        input_str = ''
+        input_str = self._set_geometry()
         previous_key = 'dummy_'
         myspace = ' '
         for key, value in sorted(self.items()):
