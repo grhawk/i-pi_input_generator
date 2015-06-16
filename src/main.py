@@ -12,11 +12,16 @@ Main file
 
 """
 
+import sys
+
+sys.path.append('./ports/port-for/')
+
 import argparse
 import ports.ports_master as portsMaster
 import ipi.input_ipi as ipi
 import dftbp.input_dftb as dftb
 from libs.io_geo import GeoIo
+
 
 # Try determining the version from git:
 try:
