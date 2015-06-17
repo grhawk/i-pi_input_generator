@@ -118,6 +118,7 @@ def _validate_args(args):
 
         notNone_option.pop('mode')
         notNone_option['rem'] = 'yes'
+        notNone_option['slots'] = notNone_option['nrep']
 
     return notNone_option
 
@@ -128,7 +129,7 @@ def _ispositive(number):
 
 def _parser():
     parser = argparse.ArgumentParser(
-        description='Helps in build REM@DFTB input files.')
+        description='Helps in building REM@DFTB input files.')
 
     rem = parser.add_argument_group('REM', 'REM variables')
     rem.add_argument('--Tmin',
@@ -190,7 +191,7 @@ def _parser():
                           help='Port used by the socket. Leave it and I will try to find one')
     ffsocket.add_argument('--slots',
                           action='store',
-                          default=2,
+                          default=1,
                           type=str,
                           help='Number of DFTB instance expected')
     ffsocket.add_argument('--timeout',
@@ -219,6 +220,9 @@ def _parser():
                          action='store',
                          default=None,
                          help='Set a title for the jobs otherwise it will be the name of the geometry file')
+    parser.add_argument('--version', '-v',
+                        action='version',
+                        version='%(prog)s ' + str(git_v, encoding='UTF-8'))
 
     return vars(parser.parse_args())
 
