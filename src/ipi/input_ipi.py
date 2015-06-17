@@ -16,6 +16,8 @@ temperature, time_step etc.
 """
 import xml.etree.ElementTree as etree
 import sys
+import scipy.optimize as optim
+
 
 # Try determining the version from git:
 try:
@@ -39,7 +41,7 @@ class InputTemplate(object):
     """Contains a default version for the ipi input file.
 
     Only the tags whose value is in CAPITALS can be actually changed by
-    the _set method. All the rest of the file will be printed as such.
+    the _set_value method. All the rest of the file will be printed as such.
 
     If you want to be able to easily modify more tags you can add the tag
     address and a nickname in the self.index dictionary. Consider that the
@@ -117,9 +119,27 @@ class InputTemplate(object):
             temperature='./system/ensemble/temperature',
             timestep='./system/ensemble/timestep',
             nstep='./total_steps',
+            system='./system',
         )
 
-    def _set(self, key, value):
+    def _tag_checkout(self, tag_key):
+        tags = self.input_xml.findall(self.index[tag_key])
+        if len(tags) > 1:
+            print('Troppi tag con lo stesso nome')
+            exit()
+        if len(tags) < 1:
+            print('Tag {} associato alla chiave {} non esistente\n'.format(
+                self.index[tag_key]), tag_key)
+            exit()
+        return tags[0]
+
+    def _value_checkout(self, value):
+        if not isinstance(value, str):
+            estr = 'Only str can be managed by the xml engine - value:{}'
+            raise TypeError(estr.format(value))
+        return value
+
+    def _set_value(self, tag_key, value):
         """Change the value of the tag in the ipi-input.
 
         Since the way to find a tag in an xml environment is not straightforward
@@ -127,24 +147,29 @@ class InputTemplate(object):
         while changing the value.
 
         Args:
-            key: the tag object whose value must change
-            value: the new value for the key tag object
+            tag_key: the tag object whose value must change
+            value: the new value for the tag_key tag object
 
         Note:
             The value has to be an integer and there have to be only one tag
             with that address otherwise exception will be raised.
 
         """
-        print(self.index[key])
-        tags = self.input_xml.findall(self.index[key])
-        if len(tags) > 1:
-            print('Troppi tag con lo stesso nome')
-            exit()
-        if not isinstance(value, str):
-            print('Value is not str')
-            exit()
+        self._value_checkout(value)
+        tag = self._tag_checkout(tag_key)
         try:
-            tags[0].text = value
+            tag.text = value
+        except IndexError:
+            sys.stderr.write('Problems with tags: {} with value: {}\n'.format(
+                tag_key, value))
+            raise(IndexError)
+
+    def _set_attrib(self, tag_key, key, value):
+        self._value_checkout(value)
+        self._value_checkout(key)
+        tag = self._tag_checkout(tag_key)
+        try:
+            tag.set(key, value)
         except IndexError:
             sys.stderr.write('Problems with tags: {} with value: {}\n'.format(
                 self.index[key], value))
@@ -227,8 +252,10 @@ class InputIpi(InputTemplate):
             self.input_xml.set('mode', 'paratemp')
             rtemp.set('units', 'kelvin')
             rtemp_list = ', '.join([str(x) for x in temp_list])
+            print('TEMPLIST:' + '[' + rtemp_list + ']')
             rtemp.text = '[' + rtemp_list + ']'
             stride.text = ' {:5d} '.format(rstride)
+            self._set_attrib('system', 'copies', str(nreps))
 
     def _compute_rem_temperature(self, maxtemp, mintemp, nreps):
         """Estimates the best temperature for the replica.
@@ -244,7 +271,8 @@ class InputIpi(InputTemplate):
 
         Todo: implement something serius... :)
         """
-        temp_list = [300.0, 513.00, 1500.14]
+
+        temp_list = remTempEstimator(mintemp, maxtemp, nreps).t_list
         return temp_list
 
     def indent(self, elem, level=0):
@@ -293,9 +321,37 @@ class InputIpi(InputTemplate):
                         'Keyword: {} not found in the index'.format(k)))
                     sys.exit()
             else:
-                self._set(k, str(v))
+                self._set_value(k, str(v))
             self.indent(self.input_xml)
+            # etree.dump(self.input_xml)
         return etree.tostring(self.input_xml, method='xml', encoding='us-ascii')
+
+
+class remTempEstimator(list):
+
+    def __init__(self, tmin, tmax, N):
+        factor = 2  # To initialize the least square method
+        f = optim.leastsq(self._tominimize, factor, args=(tmin, tmax, N))[0][0]
+        self.t_list = self._getTemps(tmin, N, f)
+#        print(self)
+
+    def _tominimize(self, f, tmin, tmax, N):
+        temp_list = self._getTemps(tmin, N, f)
+        return tmax - temp_list[-1]
+
+    def _getTemps(self, tmin, N, f):
+
+        rem_t = [tmin]
+        while True:
+            if len(rem_t) == N: break
+            rem_t.append(rem_t[-1] + self._DeltaT(rem_t[-1], f))
+
+        return rem_t
+
+
+    def _DeltaT(self, T, f):
+        return T * f
+
 
 
 class MissingKeywordError(Exception):
