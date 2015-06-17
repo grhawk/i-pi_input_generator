@@ -122,7 +122,7 @@ cp -ar $WORKING_DIR/dftb_in.hsd $TMP_DIR
 touch $WORKING_DIR/RUNNING.lock
 {bin} dftb_in.hsd >> dftb.out
 
-exit($?)
+exit()
 """.format
 
         msg = \
