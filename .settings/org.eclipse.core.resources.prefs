@@ -11,3 +11,5 @@ encoding//src/libs/geometry.py=utf-8
 encoding//src/libs/io_geo.py=utf-8
 encoding//src/main.py=utf-8
 encoding//src/ports/ports_master.py=utf-8
+encoding//src/slurm/make_runMany.py=utf-8
+encoding//src/slurm/make_script.py=utf-8
