@@ -25,7 +25,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-16"
+__updated__ = "2015-06-17"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -182,18 +182,19 @@ class GeoIo(Geometry):
         gen_format = '{a:5d}  {b:3d}  {x:12.6f}  {y:12.6f}  {z:12.6f}\n'.format
         if self.periodic:
             mode = 'S'
-            toappend = '{0:12.6f}  {0:12.6f}  {0:12.6f}\n'.format(self.origin)
+            print (self.origin)
+            toappend = ' '.join(map(lambda x: str(x), self.origin)) + '\n'
             for vect in self.latvecs:
-                toappend += '{0:12.6f}  {0:12.6f}  {0:12.6f}\n'.format(vect)
+                toappend += ' '.join(map(lambda x: str(x), vect)) + '\n'
         else:
             mode = 'C'
             toappend = ''
         msg = '{0:5d}  {1:1s}\n'.format(self.natom, mode)
         msg += ' '.join(self.specienames) + '\n'
         for i, coord in enumerate(self.coords):
-            print(coord[0])
+            print(coord)
             msg += gen_format(a=i, b=self.indexes[i] + 1,
-                              x=coord[0], y=coord[0], z=coord[0])
+                              x=coord[0], y=coord[1], z=coord[2])
         msg += toappend
         return msg
 

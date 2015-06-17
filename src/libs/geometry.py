@@ -47,7 +47,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-08"
+__updated__ = "2015-06-17"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -87,3 +87,19 @@ class Geometry(object):
         self.latvecs = []
         self.comment = None
         self.orign = None
+
+    def set_cell(self, lvects):
+        if len(lvects) == 3:
+            try:
+                lvects = [float(v) for v in lvects]
+            except:
+                raise TypeError
+            for i, v in enumerate(lvects):
+                vect = [0.0] * 3
+                vect[i] = v
+                self.latvecs.append(vect)
+        else:
+            raise(NotImplementedError('Only the xyz format is accepted!'))
+
+        self.origin = [0.0] * 3
+        self.periodic = True

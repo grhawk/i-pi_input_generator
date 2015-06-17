@@ -27,7 +27,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-16"
+__updated__ = "2015-06-17"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -77,7 +77,7 @@ class InputTemplate(object):
   <system>
     <initialize nbeads='1'>
       <cell mode='abc' units='angstrom'>
-    [1000, 1000, 1000]
+    [100, 100, 100]
       </cell>
       <file mode='xyz' units='angstrom'> XYZFILE </file>
       <velocities mode='thermal' units='kelvin'> INITIALVELOCITY </velocities>

@@ -34,7 +34,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-16"
+__updated__ = "2015-06-17"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -43,7 +43,8 @@ __status__ = 'development'
 
 
 config = dict(
-    SKfileLocation='/home/riccardo/SKfiles/3ob/'
+    SKfileLocation='/data2/Store/SK-parameters/3ob-1-1/',
+    username='petragli'
 )
 
 
@@ -65,7 +66,10 @@ def main():
     # Write data to the dftb input
     geo = GeoIo()
     geo.xyz_read(args['xyzfile'])
+    if not geo.periodic:
+        geo.set_cell([50., 50., 50.])
     print(geo.natom)
+    print('LATVECT:', geo.latvecs)
     dftbpI = dftb.InputDftb(geo, config['SKfileLocation'])
     dftbpI.add_keyword('Driver_Host', args['address'])
     dftbpI.add_keyword('Driver_Port', args['port'])
@@ -98,7 +102,7 @@ def _validate_args(args):
 
     if notNone_option['isUnix']:
         notNone_option['isUnix'] = 'Yes'
-        notNone_option['address'] = notNone_option['title']
+        notNone_option['address'] = str(notNone_option['title']) + '_' + str(config['username'])
     else:
         notNone_option['isUnix'] = 'No'
 

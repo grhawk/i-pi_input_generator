@@ -23,7 +23,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-16"
+__updated__ = "2015-06-17"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -49,7 +49,8 @@ class DftbData(object):
         self.parameters = parameters_set
 
         threeob_1_1 = dict(
-            names=['3ob', '3ob_1_1', 'threeOb', 'threeob', 'threeOB', ],
+            names=['3ob', '3ob_1_1', 'threeOb', 'threeob', 'threeOB',
+                   '3ob-1-1'],
             hubbard_derivs=dict(
                 H=-0.1857,
                 C=-0.1492,
