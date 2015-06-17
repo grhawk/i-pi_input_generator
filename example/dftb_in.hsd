@@ -1,6 +1,6 @@
 Driver = Ipi{ 
-   Host = benzene.xyz 
-   Port = 20254 
+   Host = benzene.xyz_petragli 
+   Port = 26386 
    isUnix = Yes 
    } 
 Geometry = GenFormat{ 
