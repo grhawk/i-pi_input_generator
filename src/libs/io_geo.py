@@ -25,7 +25,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-17"
+__updated__ = "2015-06-18"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -76,9 +76,11 @@ class GeoIo(Geometry):
                 if k > 1:
                     # All the following line will
                     # contains all the atom coords.
-                    tmp, x, y, z = line.split()
-                    atype.append(tmp)
-                    coords.append([float(x), float(y), float(z)])
+                    words = line.split()
+                    if len(words) == 4:
+                        tmp, x, y, z = line.split()
+                        atype.append(tmp)
+                        coords.append([float(x), float(y), float(z)])
 
         self.coords = np.array(coords)
         self.specienames = list(set(atype))
