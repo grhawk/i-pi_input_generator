@@ -246,7 +246,7 @@ def _parser():
     dftbp.add_argument('--dftb-type',
                        action='store',
                        default='3ob',
-                       choice=['3ob', 'OCo'],
+                       choices=['3ob', 'OCo'],
                        help='Set the dftbp parameters as you plese')
 
     submit = parser.add_argument_group('Submitting parameters',
