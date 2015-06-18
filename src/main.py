@@ -16,14 +16,13 @@ import sys
 import os
 heredir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(heredir, 'ports/port-for/'))
-print(os.path.join(heredir, 'ports/port-for/'))
 
 import argparse
 import ports.ports_master as portsMaster
 import ipi.input_ipi as ipi
 import dftbp.input_dftb as dftb
 from libs.io_geo import GeoIo
-
+from slurm.make_script import sbatchDftbScript as sbatch
 
 # Try determining the version from git:
 try:
@@ -54,6 +53,17 @@ config = dict(
 
 def main():
     args = _validate_args(_parser())
+
+    sbatch_script = sbatch(title=args['title'],
+                           mem=args['mem'],
+                           task_per_node=args['processors'])
+
+    args.pop('mem')
+    args.pop('processors')
+
+    with open('dftbp.sbatch', 'w') as sbatchf:
+        sbatchf.write(sbatch_script)
+
 
     # Write data to the ipi input
     ipiI = ipi.InputIpi()
@@ -185,7 +195,7 @@ def _parser():
                                          'Sockets parameters')
     ffsocket.add_argument('--address',
                           action='store',
-                          default='192.168.0.101',
+                          default='192.168.101.1',
                           type=str,
                           help='Ip address of the server')
     ffsocket.add_argument('--port',
@@ -220,13 +230,28 @@ def _parser():
                          choices=['md', 'rem'],
                          help='You can run REM or normal MD')
 
-    general.add_argument('--title',
+    submit = parser.add_argument_group('Submitting parameters',
+                                       'Setting to create the sbatch script')
+    submit.add_argument('--title',
                          action='store',
                          default=None,
                          help='Set a title for the jobs otherwise it will be the name of the geometry file')
-#     parser.add_argument('--version', '-v',
-#                         action='version',
-#                         version='%(prog)s ' + str(git_v, encoding='UTF-8'))
+    submit.add_argument('--nodes', '-n',
+                        action='store',
+                        default=1,
+                        help='Number of nodes to be used - This make sense only with REM')
+    submit.add_argument('--processors', '-p',
+                        action='store',
+                        default=1,
+                        help='Number of process for each DFTB+ instance')
+    submit.add_argument('--mem', '-m',
+                        action='store',
+                        default=1000,
+                        help='Memeory requested for each DFTB+ instance')
+    parser.add_argument('--version', '-v',
+                        action='version',
+                        version='%(prog)s ' + str(git_v, encoding='UTF-8'))
+
 
     return vars(parser.parse_args())
 

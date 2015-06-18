@@ -136,7 +136,7 @@ cd $TMP_DIR
 cp -ar $WORKING_DIR/dftb_in.hsd $TMP_DIR
 
 touch $WORKING_DIR/RUNNING.lock
-{bin} dftb_in.hsd >> {outputdir}/{outputfile}
+{bin} dftb_in.hsd > {outputdir}/{outputfile}
 
 exit()
 """.format
