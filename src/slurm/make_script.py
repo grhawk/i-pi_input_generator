@@ -72,6 +72,7 @@ class sbatchDftbScript(object):
         self.stdout = os.path.join('/home/petragli/err/',
                                    str(title) + 'stdout_%j')
         self.inputfile = 'dftb_in.hsd'
+        self.outputfile = 'dftb.out'
 
         self.config = dict(
             sources=['/software/ENV/set_intel-134.sh',
