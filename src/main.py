@@ -67,18 +67,6 @@ def main():
     args.pop('mem')
     args.pop('processors')
 
-    # Write data to the ipi input
-    ipiI = ipi.InputIpi()
-    for k, v in args.items():
-        if k == 'mode': continue
-        ipiI.set(k, v)
-
-    with open('ipi_input.xml', 'wb') as ipif:
-        # print(type(ipiI.create_input()))
-        ipif.write(ipiI.create_input())
-
-    print('Written IPI')
-
     # Write data to the dftb input
     geo = GeoIo()
     geo.xyz_read(args['xyzfile'])
@@ -92,6 +80,16 @@ def main():
 
     with open('dftb_in.hsd', 'w') as dftbf:
         dftbf.write(dftbpI.write())
+
+    # Write data to the ipi input
+    ipiI = ipi.InputIpi()
+    for k, v in args.items():
+        if k == 'mode': continue
+        ipiI.set(k, v)
+
+    with open('ipi_input.xml', 'wb') as ipif:
+        # print(type(ipiI.create_input()))
+        ipif.write(ipiI.create_input())
 
     with open('dftbp.sbatch', 'w') as sbatchf:
         sbatchf.write(sbatch_script.write())
