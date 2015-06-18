@@ -130,6 +130,7 @@ def _validate_args(args):
         notNone_option['isUnix'] = 'No'
 
 
+    notNone_option['rem'] = 'no'
     if notNone_option['mode'].lower() == 'rem':
         c1 = 'Tmin' not in notNone_option
         c2 = 'Tmax' not in notNone_option

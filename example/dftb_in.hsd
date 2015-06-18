@@ -1,6 +1,6 @@
 Driver = Ipi{ 
    Host = benzene.xyz_petragli 
-   Port = 26386 
+   Port = 10711 
    isUnix = Yes 
    } 
 Geometry = GenFormat{ 
@@ -50,7 +50,7 @@ Hamiltonian = DFTB{
    ReadInitialCharges = No 
    SCC = Yes 
    SlaterKosterFiles = Type2FileNames{ 
-      Prefix = /data2/Store/SK-parameters/3ob-1-1/ 
+      Prefix = /home/petragli/Store/SK-parameters/3ob-1-1/ 
       Separator = "-" 
       Suffix = ".skf" 
    } 
