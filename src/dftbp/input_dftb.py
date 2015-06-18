@@ -267,7 +267,7 @@ class InputDftb(dict):
 
     def set_preset(self, preset):
         param = DftbPreset().get(preset)
-        self.parameters_set = param.pop('_parameters')
+        self.parameters_set = param.pop('_parameters_set')
         for k, v in DftbPreset(preset):
             self.add_keyword(k, v)
 
