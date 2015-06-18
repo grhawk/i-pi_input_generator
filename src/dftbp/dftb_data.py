@@ -100,7 +100,7 @@ class DftbData(object):
         """
         self.find_data_per_method(data_type)
         if atype not in self.prms[data_type]:
-            raise AtomTypeNotFoundError(atype)
+            raise AtomTypeNotFoundError(atype, self.parameters)
 
         return self.prms[data_type][atype]
 
@@ -177,9 +177,9 @@ class DataTypeNotFoundError(Exception):
 
 
 class AtomTypeNotFoundError(Exception):
-    def __init__(self, atype):
+    def __init__(self, atype, parameters):
         msg = 'You asked for {0} atom from the {1} parameters set!!\n'.format(
-            atype, self.parameters_set)
+            atype, parameters)
         msg += 'The atom you specified is not available into the selected\n'
         msg += 'parameters set. Check the documentation of the parameters set\n'
         msg += 'to see which atoms are available. If you need something\n'
