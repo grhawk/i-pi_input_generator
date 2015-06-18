@@ -126,7 +126,6 @@ class DftbPreset(object):
                 Hamiltonian_MaxSCCIterations=500,
                 Hamiltonian_Charge=0,
                 Hamiltonian_DampXH='Yes',
-                Hamiltonian_ThirdOrderFull='Yes',
                 Hamiltonian_Filling_='Fermi',
                 Hamiltonian_Filling_Temperature=300,
                 Hamiltonian_KPointsAndWeights_='',
