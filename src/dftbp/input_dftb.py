@@ -268,7 +268,8 @@ class InputDftb(dict):
     def set_preset(self, preset):
         param = DftbPreset().get(preset)
         self.parameters_set = param.pop('_parameters_set')
-        for k, v in DftbPreset(preset):
+        self.skdir = param.pop('_sk_directory')
+        for k, v in param:
             self.add_keyword(k, v)
 
         self.add_keyword('Hamiltonian_SlaterKosterFiles_Prefix',
