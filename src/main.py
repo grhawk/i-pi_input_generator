@@ -28,7 +28,10 @@ from libs.io_geo import GeoIo
 # Try determining the version from git:
 try:
     import subprocess
-    git_v = subprocess.check_output(['git', 'describe'])
+    git_v = subprocess.check_output(['git',
+                                     '--git-dir=' + os.path.join(heredir,
+                                                                 '../.git'),
+                                     'describe'])
 except subprocess.CalledProcessError:
     git_v = 'Not Yet Tagged!'
 
@@ -221,9 +224,9 @@ def _parser():
                          action='store',
                          default=None,
                          help='Set a title for the jobs otherwise it will be the name of the geometry file')
-    parser.add_argument('--version', '-v',
-                        action='version',
-                        version='%(prog)s ' + str(git_v, encoding='UTF-8'))
+#     parser.add_argument('--version', '-v',
+#                         action='version',
+#                         version='%(prog)s ' + str(git_v, encoding='UTF-8'))
 
     return vars(parser.parse_args())
 
