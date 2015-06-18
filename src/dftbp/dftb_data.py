@@ -135,7 +135,7 @@ class DftbPreset(object):
                 Hamiltonian_Dispersion_Parameters='UFFParameters{}',
             ),
             noscc=dict(
-                _names=['noscc', 'busch'],
+                _names=['noscc', 'busch', 'OCo'],
                 _parameters_set='mio-1-1+trans3d',
                 _sk_directory='miotrans',
                 Hamiltonian_SCC='No',
