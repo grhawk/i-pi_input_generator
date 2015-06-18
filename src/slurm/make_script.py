@@ -80,7 +80,6 @@ class sbatchDftbScript(object):
             bin='/home/petragli/Software/dftbp-ipi/prg_dftb/_obj_x86_64-linux-ifort-aries/dftb+',
             # bin='/home/petragli/MyCodes/dftbp-ipi/prg_dftb/_obj_x86_64-linux-gfortran/dftb+'
         )
-        self.check_all()
 
     def check_all(self):
         if not os.path.isfile(self.inputfile):
@@ -96,6 +95,8 @@ class sbatchDftbScript(object):
                     self.outputdir = self.workdir
 
     def write(self):
+
+        self.check_all()
 
         init = \
             """#!/bin/bash

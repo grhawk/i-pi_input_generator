@@ -55,6 +55,17 @@ config = dict(
 def main():
     args = _validate_args(_parser())
 
+    if args['rem'] == 'yes':
+        title_for_sbatch = 'pippopluto_title'
+    else:
+        title_for_sbatch = args['title']
+
+    sbatch_script = sbatch(title=title_for_sbatch,
+                           mem=args['mem'],
+                           task_per_node=args['processors'])
+    args.pop('mem')
+    args.pop('processors')
+
     # Write data to the ipi input
     ipiI = ipi.InputIpi()
     for k, v in args.items():
@@ -84,18 +95,8 @@ def main():
         dftbf.write(dftbpI.write())
 
 
-    if args['rem'] == 'yes':
-        title_for_sbatch = 'pippopluto_title'
-    else:
-        title_for_sbatch = args['title']
-
-    sbatch_script = sbatch(title=title_for_sbatch,
-                           mem=args['mem'],
-                           task_per_node=args['processors']).write()
-    args.pop('mem')
-    args.pop('processors')
     with open('dftbp.sbatch', 'w') as sbatchf:
-        sbatchf.write(sbatch_script)
+        sbatchf.write(sbatch_script.write())
 
     if args['rem'] == 'yes':
         rmscript = rMany(nreps=args['slots'],
