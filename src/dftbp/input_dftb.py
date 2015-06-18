@@ -273,7 +273,7 @@ class InputDftb(dict):
             self.add_keyword(k, v)
 
         self.add_keyword('Hamiltonian_SlaterKosterFiles_Prefix',
-                         os.path.join(self.parameters_folder, self.skdir))
+                         os.path.join(self.parameters_folder, self.skdir)+'/')
 
 
 class AlreadyExistingKeyword(Exception):

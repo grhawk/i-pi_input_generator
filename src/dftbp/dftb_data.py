@@ -119,7 +119,7 @@ class DftbPreset(object):
             threeob_1_1=dict(
                 _names=['3ob', '3ob-1-1'],
                 _parameters_set='3ob-1-1',
-                _sk_directory='3ob',
+                _sk_directory='3ob-1-1',
                 Hamiltonian_ThirdOrderFull='Yes',
                 Hamiltonian_SCC='Yes',
                 Hamiltonian_Eigensolver='RelativelyRobust{}',

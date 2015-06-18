@@ -81,8 +81,6 @@ def main():
     with open('dftb_in.hsd', 'w') as dftbf:
         dftbf.write(dftbpI.write())
 
-    print(args['dftb_type'])
-
     # Write data to the ipi input
     ipiI = ipi.InputIpi()
     for k, v in args.items():
