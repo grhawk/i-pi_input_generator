@@ -310,10 +310,11 @@ class InputIpi(InputTemplate):
                 if k == 'mode':
                     pass
                 elif k == 'isUnix':
-                    if v:
+                    print('UNIXVALUE:',v)
+                    if v == 'yes':
                         self.input_xml.findall('./ffsocket')[0].set('mode', 'unix')
                     else:
-                        self.input_xml.findall('./ffsoket')[0].set('mode', 'inet')
+                        self.input_xml.findall('./ffsocket')[0].set('mode', 'inet')
                 elif k == 'title':
                     continue
                 else:
