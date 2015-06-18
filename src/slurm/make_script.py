@@ -39,6 +39,8 @@ Attributes:
 
 import os
 import sys
+import shutil
+import re
 
 # Try determining the version from git:
 try:
@@ -50,7 +52,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-17"
+__updated__ = "2015-06-18"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -65,27 +67,37 @@ class sbatchDftbScript(object):
         self.mem = mem
         self.nodes = 1
         self.ntasks_per_nodes = task_per_node
-        self.stderr = os.path.join('/home/petragli/err/', str(title) + 'stderr_%j')
-        self.stdout = os.path.join('/home/petragli/err/', str(title) + 'stdout_%j')
+        self.stderr = os.path.join('/home/petragli/err/',
+                                   str(title) + 'stderr_%j')
+        self.stdout = os.path.join('/home/petragli/err/',
+                                   str(title) + 'stdout_%j')
         self.inputfile = 'dftb_in.hsd'
 
         self.config = dict(
-            sources=['/software/ENV/set_intel-134.sh', '/software/ENV/set_impi_413.sh'],
+            sources=['/software/ENV/set_intel-134.sh',
+                     '/software/ENV/set_impi_413.sh'],
             bin='/home/petragli/Software/dftbp-ipi/prg_dftb/_obj_x86_64-linux-ifort-aries/dftb+',
             # bin='/home/petragli/MyCodes/dftbp-ipi/prg_dftb/_obj_x86_64-linux-gfortran/dftb+'
-            )
+        )
         self.check_all()
 
     def check_all(self):
         if not os.path.isfile(self.inputfile):
             raise FileNotFound('INPUTFILE', self.inputfile)
-#         if not os.path.isfile(self.config['bin']):
-#             raise FileNotFound('BINFILE', self.config['bin'])
+        if self.inputfile != 'dftb_in.hsd':
+            shutil.copy2(self.inputfile, 'dftb_in.hsd')
+            self.outputfile = self.inputfile[:-3] + 'out'
+        with open(self.inputfile) as ifile:
+            for line in ifile:
+                if line.find('IPI') >= 0 and re.match(r'^\s*\#.*$', line):
+                        self.outputdir = '.'
+                else:
+                    self.outputdir = self.workdir
 
     def write(self):
 
         init = \
-"""#!/bin/bash
+            """#!/bin/bash
 #SBATCH -J {title}
 #SBATCH -e {stderr}
 #SBATCH -o {stdout}
@@ -99,28 +111,31 @@ TMP_DIR=$SLURM_TMPDIR
 
 export OMP_NUM_THREADS={ntasks_per_node}
 """.format
+
         sources = ''
         for s in self.config['sources']:
             sources += 'source {:s}\n'.format(s)
 
         functions = \
-"""
+            """
 function coping_back() {
-    rsync -ch $TMP_DIR $WORKING_DIR
+    rsync -ca $TMP_DIR/ $WORKING_DIR/
     if [[ -e $WORKING_DIR/RUNNING.lock ]]; then
         rm -f $WORKING_DIR/RUNNING.lock
     fi
 }
+
 trap 'coping_back' TERM EXIT
+
 """
 
         works = \
-"""
+            """
 cd $TMP_DIR
 cp -ar $WORKING_DIR/dftb_in.hsd $TMP_DIR
 
 touch $WORKING_DIR/RUNNING.lock
-{bin} dftb_in.hsd >> dftb.out
+{bin} dftb_in.hsd >> {outputdir}/{outputfile}
 
 exit($?)
 """.format
@@ -137,7 +152,10 @@ exit($?)
                  ) + \
             sources + \
             functions + \
-            works(bin=self.config['bin'])
+            works(bin=self.config['bin'],
+                  outputfile=self.outputfile,
+                  outputdir=self.outputdir
+                  )
 
         return msg
 
