@@ -47,7 +47,7 @@ __status__ = 'development'
 
 
 config = dict(
-    SKfileLocation='/data2/Store/SK-parameters/3ob-1-1/',
+    SKfileLocation='/home/petragli/Store/SK-parameters/3ob-1-1/',
     username='petragli'
 )
 
