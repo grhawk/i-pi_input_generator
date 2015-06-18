@@ -16,6 +16,7 @@ dftb+ code.
 
 import os
 from dftbp.dftb_data import DftbData
+from dftbp.dftb_data import DftbPreset
 # from libs.geometry import Geometry as Structure
 
 # Try determining the version from git:
@@ -66,13 +67,8 @@ class InputDftb(dict):
 
     """
 
-    def __init__(self, Geometry, parameters_folder, parameters_set=None):
+    def __init__(self, Geometry, parameters_folder):
         super().__init__()
-
-        if not parameters_set:
-            parameters_set = os.path.basename(os.path.normpath(parameters_folder))
-            print('AAAAAAAAAAAAA', parameters_set)
-
 
         default_prms = dict(
             Geometry_='GenFormat',
@@ -80,22 +76,8 @@ class InputDftb(dict):
             Driver_='Ipi',
             Hamiltonian_='DFTB',
             Hamiltonian_SlaterKosterFiles_='Type2FileNames',
-            Hamiltonian_SlaterKosterFiles_Prefix=parameters_folder,
             Hamiltonian_SlaterKosterFiles_Separator='"-"',
             Hamiltonian_SlaterKosterFiles_Suffix='".skf"',
-            Hamiltonian_SCC='Yes',
-            Hamiltonian_Eigensolver='RelativelyRobust{}',
-            Hamiltonian_ReadInitialCharges='No',
-            Hamiltonian_MaxSCCIterations=500,
-            Hamiltonian_Charge=0,
-            Hamiltonian_DampXH='Yes',
-            Hamiltonian_ThirdOrderFull='Yes',
-            Hamiltonian_Filling_='Fermi',
-            Hamiltonian_Filling_Temperature=300,
-            Hamiltonian_KPointsAndWeights_='',
-            Hamiltonian_KPointsAndWeights_empty='.5 .5 .5 1.0',
-            Hamiltonian_Dispersion_='LennardJones',
-            Hamiltonian_Dispersion_Parameters='UFFParameters{}',
             Options_='',
             Options_WriteResultsTag='No',
             Options_WriteDetailedOut='No',
@@ -106,7 +88,8 @@ class InputDftb(dict):
             self.add_keyword(k, v)
 
         self.Geometry = Geometry
-        self.parameters_set = parameters_set
+        self.parameters_folder = parameters_folder
+        self.parameters_set = None
 
     def _set_atoms_property(self):
         """Private method to retrieve the data per atom/parameters_set.
@@ -281,6 +264,15 @@ class InputDftb(dict):
 
         """
         raise AlternativeMethod('__delitem__', 'del_keyword')
+
+    def set_preset(self, preset):
+        param = DftbPreset().get(preset)
+        self.parameters_set = param.pop('_parameters')
+        for k, v in DftbPreset(preset):
+            self.add_keyword(k, v)
+
+        self.add_keyword('Hamiltonian_SlaterKosterFiles_Prefix',
+                         os.path.join(self.parameters_folder, self.skdir))
 
 
 class AlreadyExistingKeyword(Exception):

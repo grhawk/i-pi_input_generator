@@ -23,7 +23,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-17"
+__updated__ = "2015-06-18"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -67,10 +67,23 @@ class DftbData(object):
                 O="p",
             )
         )
+        mio_1_1trans3d = dict(
+            names=['miotrans', 'mio-1-1+trans3d'],
+            max_angular_momentum=dict(
+                H="s",
+                C="p",
+                N="p",
+                S="d",
+                O="p",
+                Co="d"
+            )
+        )
 
         print(parameters_set)
         if parameters_set in threeob_1_1['names']:
             self.prms = threeob_1_1
+        elif parameters_set in mio_1_1trans3d['names']:
+            self.prms = mio_1_1trans3d
         else:
             raise ParametersSetNotFoundError(parameters_set)
 
@@ -95,6 +108,46 @@ class DftbData(object):
         if data_type not in self.prms:
             raise DataTypeNotFoundError(data_type)
         return self.prms[data_type]
+
+
+class DftbPreset(object):
+    def __init__(self):
+        pass
+
+    def get(self, dftb_type):
+        dftb_types = dict(
+            threeob_1_1=dict(
+                _parameters_set='3ob-1-1',
+                _sk_directory='3ob',
+                Hamiltonian_ThirdOrderFull='Yes',
+                Hamiltonian_SCC='Yes',
+                Hamiltonian_Eigensolver='RelativelyRobust{}',
+                Hamiltonian_ReadInitialCharges='No',
+                Hamiltonian_MaxSCCIterations=500,
+                Hamiltonian_Charge=0,
+                Hamiltonian_DampXH='Yes',
+                Hamiltonian_ThirdOrderFull='Yes',
+                Hamiltonian_Filling_='Fermi',
+                Hamiltonian_Filling_Temperature=300,
+                Hamiltonian_KPointsAndWeights_='',
+                Hamiltonian_KPointsAndWeights_empty='.5 .5 .5 1.0',
+                Hamiltonian_Dispersion_='LennardJones',
+                Hamiltonian_Dispersion_Parameters='UFFParameters{}',
+            ),
+            noscc=dict(
+                _parameters_set='mio-1-1+trans3d',
+                _sk_directory='miotrans',
+                Hamiltonian_SCC='No',
+                Hamiltonian_Charge=0,
+                Hamiltonian_Filling_='Fermi',
+                Hamiltonian_Filling_Temperature=300,
+                Hamiltonian_KPointsAndWeights_='',
+                Hamiltonian_KPointsAndWeights_empty='.5 .5 .5 1.0',
+                Hamiltonian_Dispersion_='LennardJones',
+                Hamiltonian_Dispersion_Parameters='UFFParameters{}',
+            )
+        )
+        return dftb_types[dftb_type]
 
 
 

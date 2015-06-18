@@ -48,7 +48,7 @@ __status__ = 'development'
 
 
 config = dict(
-    SKfileLocation='/home/petragli/Store/SK-parameters/3ob-1-1/',
+    SKfileLocation='/home/petragli/Store/SK-parameters/',
     username='petragli'
 )
 
@@ -84,17 +84,14 @@ def main():
     geo.xyz_read(args['xyzfile'])
     if not geo.periodic:
         geo.set_cell([50., 50., 50.])
-    print(geo.natom)
-    print('LATVECT:', geo.latvecs)
     dftbpI = dftb.InputDftb(geo, config['SKfileLocation'])
     dftbpI.add_keyword('Driver_Host', args['address'])
     dftbpI.add_keyword('Driver_Port', args['port'])
     dftbpI.add_keyword('Driver_isUnix', args['isUnix'])
-    dftbpI.add_keyword('Hamiltonian_ThirdOrderFull', 'Yes')
+    dftbpI.set_preset(args.pop('dftb_type'))
 
     with open('dftb_in.hsd', 'w') as dftbf:
         dftbf.write(dftbpI.write())
-
 
     with open('dftbp.sbatch', 'w') as sbatchf:
         sbatchf.write(sbatch_script.write())
@@ -112,7 +109,6 @@ def _validate_args(args):
     notNone_option = {}
     for k, v in args.items():
         if v is not None:
-            print(k, v)
             notNone_option[k] = v
             if (isinstance(v, int) or isinstance(v, float)) and not (v == False or v == True):
                 if not _ispositive(v):
@@ -244,6 +240,14 @@ def _parser():
                          default='md',
                          choices=['md', 'rem'],
                          help='You can run REM or normal MD')
+
+    dftbp = parser.add_argument_group('DFTB parameters',
+                                      'Options to set the DFTB run')
+    dftbp.add_argument('--dftb-type',
+                       action='store',
+                       default='3ob',
+                       choice=['3ob', 'OCo'],
+                       help='Set the dftbp parameters as you plese')
 
     submit = parser.add_argument_group('Submitting parameters',
                                        'Setting to create the sbatch script')
