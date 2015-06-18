@@ -23,6 +23,7 @@ import ipi.input_ipi as ipi
 import dftbp.input_dftb as dftb
 from libs.io_geo import GeoIo
 from slurm.make_script import sbatchDftbScript as sbatch
+from slurm.make_runMany import runManyDftbScript as rMany
 
 # Try determining the version from git:
 try:
@@ -54,16 +55,24 @@ config = dict(
 def main():
     args = _validate_args(_parser())
 
-    sbatch_script = sbatch(title=args['title'],
-                           mem=args['mem'],
-                           task_per_node=args['processors'])
+    if args['rem'] == 'yes':
+        title_for_sbatch = 'pippopluto_title'
+    else:
+        title_for_sbatch = args['title']
 
+    sbatch_script = sbatch(title=title_for_sbatch,
+                           mem=args['mem'],
+                           task_per_node=args['processors']).write()
     args.pop('mem')
     args.pop('processors')
-
     with open('dftbp.sbatch', 'w') as sbatchf:
         sbatchf.write(sbatch_script)
 
+    if args['rem'] == 'yes':
+        rmscript = rMany(nreps=args['slots'],
+                         title=args['title']).write()
+        with open('runMany.sh', 'w') as runManyf:
+            runManyf.write(rmscript)
 
     # Write data to the ipi input
     ipiI = ipi.InputIpi()
@@ -236,10 +245,6 @@ def _parser():
                          action='store',
                          default=None,
                          help='Set a title for the jobs otherwise it will be the name of the geometry file')
-    submit.add_argument('--nodes', '-n',
-                        action='store',
-                        default=1,
-                        help='Number of nodes to be used - This make sense only with REM')
     submit.add_argument('--processors', '-p',
                         action='store',
                         default=1,
