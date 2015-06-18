@@ -98,8 +98,8 @@ class InputDftb(dict):
             Hamiltonian_Dispersion_Parameters='UFFParameters{}',
             Options_='',
             Options_WriteResultsTag='No',
-            Options_DetailedOut='No',
-            Options_BandOut='No',
+            Options_WriteDetailedOut='No',
+            Options_WriteBandOut='No',
         )
 
         for k, v in default_prms.items():
@@ -170,9 +170,6 @@ class InputDftb(dict):
         current_depth = key.rstrip('_').count('_')
         for my_backsclash in reversed(range(current_depth)):
             input_str += (3 * my_backsclash * myspace + '} \n')
-        input_str += ('Options { \n')
-        input_str += ('   WriteResultsTag = Yes  \n')
-        input_str += ('} \n')
         return input_str
 
     def _make_string_keyword(self, keyword, parents):
