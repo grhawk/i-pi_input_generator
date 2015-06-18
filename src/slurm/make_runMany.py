@@ -55,7 +55,7 @@ __email__ = 'riccardo.petraglia@gmail.com'
 __status__ = 'development'
 
 class runManyDftbScript(object):
-    def __init__(self, nreps=1, title='dftbJob'):
+    def __init__(self, nreps=1, title='dftbJob', sbatch_filename='dftbp.sbatch'):
 
         self.script_file = """#!/bin/bash
 
@@ -66,7 +66,7 @@ TMPFILE=submit.$$
 function start_dftb() {{
     touch RUNNING.lock
     cp -f ../dftb_in.hsd .
-    sed s/pippopluto_title/{title}-$1/g ../dftb.dftbp.sh > $TMPFILE; mv $TMPFILE dftb.dftbp.sh
+    sed s/pippopluto_title/{title}-$1/g ../{sbatch_filename} > $TMPFILE; mv $TMPFILE dftb.dftbp.sh
     sbatch dftb.dftbp.sh
 }}
 
@@ -90,7 +90,7 @@ for i in `seq 1 $dftb_sessions`; do
         cd ..
     fi
 done
-""".format(nreps=nreps, title=title)
+""".format(nreps=nreps, title=title, sbatch_filename=sbatch_filename)
         self.write()
 
     def write(self):
