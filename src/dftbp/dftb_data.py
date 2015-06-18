@@ -117,6 +117,7 @@ class DftbPreset(object):
     def get(self, dftb_type):
         dftb_types = dict(
             threeob_1_1=dict(
+                _names=['3ob', '3ob-1-1'],
                 _parameters_set='3ob-1-1',
                 _sk_directory='3ob',
                 Hamiltonian_ThirdOrderFull='Yes',
@@ -134,6 +135,7 @@ class DftbPreset(object):
                 Hamiltonian_Dispersion_Parameters='UFFParameters{}',
             ),
             noscc=dict(
+                _names=['noscc', 'busch'],
                 _parameters_set='mio-1-1+trans3d',
                 _sk_directory='miotrans',
                 Hamiltonian_SCC='No',
@@ -146,7 +148,11 @@ class DftbPreset(object):
                 Hamiltonian_Dispersion_Parameters='UFFParameters{}',
             )
         )
-        return dftb_types[dftb_type]
+
+        for v in dftb_types.values():
+            if dftb_type in v.pop('_names'):
+                return v
+
 
 
 
