@@ -71,7 +71,7 @@ function start_dftb() {{
 }}
 
 for i in `seq 1 $dftb_sessions`; do
-    name=`printf 'S-%03i' $i`
+    name=`printf 'REM%03i' $i`
     if [[ -e $name ]]; then
         echo "Directory $name exists, checking if used.."
         cd $name

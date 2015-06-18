@@ -18,6 +18,7 @@ heredir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(heredir, 'ports/port-for/'))
 
 import argparse
+import stat
 import ports.ports_master as portsMaster
 import ipi.input_ipi as ipi
 import dftbp.input_dftb as dftb
@@ -103,6 +104,8 @@ def main():
                          title=args['title']).write()
         with open('runMany.sh', 'w') as runManyf:
             runManyf.write(rmscript)
+        st = os.stat('runMany.sh')
+        os.chmod('runMany.sh', st.st_mode | stat.S_IEXEC)
 
 
 def _validate_args(args):

@@ -62,7 +62,7 @@ __status__ = 'development'
 
 class sbatchDftbScript(object):
     def __init__(self, title='dftbJob', mem=1000, task_per_node=1):
-        self.workdir = os.getcwd()
+        self.workdir = '$PWD'
         self.title = title
         self.mem = mem
         self.nodes = 1
