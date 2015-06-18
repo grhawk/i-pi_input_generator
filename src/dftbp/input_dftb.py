@@ -27,7 +27,7 @@ except subprocess.CalledProcessError:
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-16"
+__updated__ = "2015-06-18"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -95,7 +95,11 @@ class InputDftb(dict):
             Hamiltonian_KPointsAndWeights_='',
             Hamiltonian_KPointsAndWeights_empty='.5 .5 .5 1.0',
             Hamiltonian_Dispersion_='LennardJones',
-            Hamiltonian_Dispersion_Parameters='UFFParameters{}'
+            Hamiltonian_Dispersion_Parameters='UFFParameters{}',
+            Options_='',
+            Options_WriteResultsTag='No',
+            Options_DetailedOut='No',
+            Options_BandOut='No',
         )
 
         for k, v in default_prms.items():
