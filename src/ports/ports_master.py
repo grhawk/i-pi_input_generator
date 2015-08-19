@@ -42,14 +42,15 @@ import port_for
 # Try determining the version from git:
 try:
     import subprocess
-    git_v = subprocess.check_output(['git', 'describe'])
+    git_v = subprocess.check_output(['git', 'describe'],
+                                    stderr=subprocess.DEVNULL)
 except subprocess.CalledProcessError:
     git_v = 'Not Yet Tagged!'
 
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-12"
+__updated__ = "2015-08-19"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -80,8 +81,6 @@ def is_port_free(port):
     return cond
 
     return
-
-
 
 if __name__ == '__main__':
 

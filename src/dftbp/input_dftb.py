@@ -22,13 +22,14 @@ from dftbp.dftb_data import DftbPreset
 # Try determining the version from git:
 try:
     import subprocess
-    git_v = subprocess.check_output(['git', 'describe'])
+    git_v = subprocess.check_output(['git', 'describe'],
+                                    stderr=subprocess.DEVNULL)
 except subprocess.CalledProcessError:
     git_v = 'Not Yet Tagged!'
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-06-18"
+__updated__ = "2015-08-19"
 __license__ = 'GPLv2'
 __version__ = git_v
 __maintainer__ = 'Riccardo Petraglia'
@@ -120,7 +121,8 @@ class InputDftb(dict):
                 self.add_keyword('Hamiltonian_HubbardDerivs_{}'.format(atype),
                                  data.find_data_per_atom(atype,
                                                          'hubbard_derivs'))
-                self.add_keyword('Hamiltonian_DampXHExponent', data.find_data_per_method('damp_xh_exponent'))
+                self.add_keyword('Hamiltonian_DampXHExponent',
+                                 data.find_data_per_method('damp_xh_exponent'))
 
     def write(self):
         """This method has been mostly copied from the ASE package.
