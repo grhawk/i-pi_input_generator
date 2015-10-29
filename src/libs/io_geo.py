@@ -77,11 +77,14 @@ class GeoIo(Geometry):
                 if k > 1:
                     # All the following line will
                     # contains all the atom coords.
+                    line = line.strip()
                     words = line.split()
                     if len(words) == 4:
                         tmp, x, y, z = line.split()
                         atype.append(tmp)
                         coords.append([float(x), float(y), float(z)])
+                    else:
+                        print('Unknown Format: {}'.format(line))
 
         self.coords = np.array(coords)
         self.specienames = list(set(atype))
