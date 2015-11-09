@@ -1,3 +1,0 @@
-[submodule "src/ports/port-for"]
-	path = src/ports/port-for
-	url = https://github.com/kmike/port-for.git
