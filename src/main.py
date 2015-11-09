@@ -15,7 +15,7 @@ Main file
 import sys
 import os
 heredir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(heredir, 'ports/port-for/'))
+sys.path.append(os.path.join(heredir, 'ports/port-for'))
 
 import argparse
 import stat
@@ -73,9 +73,13 @@ def main():
     if not geo.periodic:
         geo.set_cell([50., 50., 50.])
     dftbpI = dftb.InputDftb(geo, config['SKfileLocation'])
-    dftbpI.add_keyword('Driver_Host', args['address'])
-    dftbpI.add_keyword('Driver_Port', args['port'])
-    dftbpI.add_keyword('Driver_isUnix', args['isUnix'])
+    dftbpI.add_keyword('Socket_Protocol', 'i-PI')
+    dftbpI.add_keyword('Socket_MaxSteps', 10000000)
+    if args['isUnix']:
+        dftbpI.add_keyword('Socket_File', args['address'])
+    else:
+        dftbpI.add_keyword('Socket_Host', args['address'])
+        dftbpI.add_keyword('Socket_Port', args['port'])
     dftbpI.set_preset(args.pop('dftb_type'))
 
     with open('dftb_in.hsd', 'w') as dftbf:
@@ -123,10 +127,10 @@ def _validate_args(args):
         notNone_option['title'] = notNone_option['xyzfile']
 
     if notNone_option['isUnix']:
-        notNone_option['isUnix'] = 'Yes'
+        notNone_option['isUnix'] = True
         notNone_option['address'] = str(notNone_option['title']) + '_' + str(config['username'])
     else:
-        notNone_option['isUnix'] = 'No'
+        notNone_option['isUnix'] = False
 
 
     notNone_option['rem'] = 'no'

@@ -74,7 +74,7 @@ class InputDftb(dict):
         default_prms = dict(
             Geometry_='GenFormat',
             Geometry_empty=Geometry.gen_write(),
-            Driver_='Ipi',
+            Driver_='Socket',
             Hamiltonian_='DFTB',
             Hamiltonian_SlaterKosterFiles_='Type2FileNames',
             Hamiltonian_SlaterKosterFiles_Separator='"-"',
