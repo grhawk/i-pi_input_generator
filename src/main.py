@@ -73,13 +73,13 @@ def main():
     if not geo.periodic:
         geo.set_cell([50., 50., 50.])
     dftbpI = dftb.InputDftb(geo, config['SKfileLocation'])
-    dftbpI.add_keyword('Socket_Protocol', 'i-PI')
-    dftbpI.add_keyword('Socket_MaxSteps', 10000000)
+    dftbpI.add_keyword('Driver_Protocol', 'i-PI')
+    dftbpI.add_keyword('Driver_MaxSteps', 10000000)
     if args['isUnix']:
-        dftbpI.add_keyword('Socket_File', args['address'])
+        dftbpI.add_keyword('Driver_File', args['address'])
     else:
-        dftbpI.add_keyword('Socket_Host', args['address'])
-        dftbpI.add_keyword('Socket_Port', args['port'])
+        dftbpI.add_keyword('Driver_Host', args['address'])
+        dftbpI.add_keyword('Driver_Port', args['port'])
     dftbpI.set_preset(args.pop('dftb_type'))
 
     with open('dftb_in.hsd', 'w') as dftbf:
