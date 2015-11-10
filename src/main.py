@@ -29,12 +29,10 @@ from slurm.make_runMany import runManyDftbScript as rMany
 # Try determining the version from git:
 try:
     import subprocess
-    git_v = subprocess.check_output(['git',
-                                     '--git-dir=' + os.path.join(heredir,
-                                                                 '../.git'),
-                                     'describe'])
+    git_v = subprocess.check_output(['git', 'describe'],
+                                    stderr=subprocess.DEVNULL)
 except subprocess.CalledProcessError:
-    git_v = 'Not Yet Tagged!'
+    git_v = b'Not Yet Tagged!'
 
 
 __author__ = 'Riccardo Petraglia'
