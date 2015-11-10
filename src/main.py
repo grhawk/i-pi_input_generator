@@ -71,7 +71,7 @@ def main():
     if not geo.periodic:
         geo.set_cell([50., 50., 50.])
     dftbpI = dftb.InputDftb(geo, config['SKfileLocation'])
-    dftbpI.add_keyword('Driver_Protocol', 'i-PI')
+    dftbpI.add_keyword('Driver_Protocol', 'i-PI{}')
     dftbpI.add_keyword('Driver_MaxSteps', 10000000)
     if args['isUnix']:
         dftbpI.add_keyword('Driver_File', args['address'])
@@ -186,7 +186,7 @@ def _parser():
                           help='Temperature if not REM simulation')
     ensemble.add_argument('--timestep',
                           action='store',
-                          default=0.5,
+                          default=0.25,
                           type=float,
                           help='Time step')
 
@@ -206,7 +206,7 @@ def _parser():
                                          'Sockets parameters')
     ffsocket.add_argument('--address',
                           action='store',
-                          default='192.168.101.1',
+                          default='192.168.100.1',
                           type=str,
                           help='Ip address of the server')
     ffsocket.add_argument('--port',

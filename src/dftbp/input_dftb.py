@@ -82,7 +82,8 @@ class InputDftb(dict):
             Options_='',
             Options_WriteResultsTag='No',
             Options_WriteDetailedOut='No',
-            Options_WriteBandOut='No',
+            Analysis_='',
+            Analysis_WriteBandOut='No',
         )
 
         for k, v in default_prms.items():

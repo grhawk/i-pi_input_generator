@@ -64,20 +64,19 @@ __status__ = 'development'
 class sbatchDftbScript(object):
     def __init__(self, title='dftbJob', mem=1000, task_per_node=1):
         self.workdir = '$PWD'
-        self.title = title
+        self.title = os.path.basename(title)
         self.mem = mem
         self.nodes = 1
         self.ntasks_per_nodes = task_per_node
         self.stderr = os.path.join('/home/petragli/err/',
-                                   str(title) + 'stderr_%j')
+                                   os.path.basename(str(title)) + 'stderr_%j')
         self.stdout = os.path.join('/home/petragli/err/',
-                                   str(title) + 'stdout_%j')
+                                   os.path.basename(str(title)) + 'stdout_%j')
         self.inputfile = 'dftb_in.hsd'
         self.outputfile = 'dftb.out'
 
         self.config = dict(
-            sources=['/software/ENV/set_intel-134.sh',
-                     '/software/ENV/set_impi_413.sh'],
+            sources=['intel/15.0.3',],
             bin='/home/petragli/Software/dftbp-ipi/prg_dftb/_obj_x86_64-linux-ifort-aries/dftb+',
             # bin='/home/petragli/MyCodes/dftbp-ipi/prg_dftb/_obj_x86_64-linux-gfortran/dftb+'
         )
@@ -117,7 +116,7 @@ export OMP_NUM_THREADS={ntasks_per_node}
 
         sources = ''
         for s in self.config['sources']:
-            sources += 'source {:s}\n'.format(s)
+            sources += 'module load {:s}\n'.format(s)
 
         functions = \
             """

@@ -63,11 +63,7 @@ class InputTemplate(object):
     <timeout> TIMEOUT </timeout>
   </ffsocket>
   <output>
-    <properties filename='md' stride='10' flush='10'>
-     [step, time{picosecond}, conserved{kilocal/mol}, temperature{kelvin},
-     potential{kilocal/mol}, kinetic_md{kilocal/mol}]
-    </properties>
-    <properties filename='xyz.md' stride='50' flush='10'>
+    <properties filename='md' stride='50' flush='10'>
      [step, time{picosecond}, conserved{kilocal/mol}, temperature{kelvin},
      potential{kilocal/mol}, kinetic_md{kilocal/mol}]
     </properties>
@@ -75,7 +71,7 @@ class InputTemplate(object):
         positions{angstrom}
     </trajectory>
     <checkpoint filename='checkpoint'
-    stride='1000' overwrite='True' flush='1' />
+    stride='1000' overwrite='True' />
   </output>
   <system>
     <initialize nbeads='1'>
