@@ -121,8 +121,21 @@ class InputTemplate(object):
 
     def _tag_checkout(self, tag_key):
         tags = self.input_xml.findall(self.index[tag_key])
-        if len(tags) > 1:
+
+        # when a bias is present following tags appear twice
+        c1 = tag_key == 'port'
+        c2 = tag_key == 'slots'
+        c3 = tag_key == 'address'
+        c4 = tag_key == 'timeout'
+        c5 = len(self.input_xml.findall('./system/bias')) > 0
+        if c5 and (c1 or c2 or c3 or c4):
+            allowed_tags = 2
+        else:
+            allowed_tags = 1
+
+        if len(tags) > allowed_tags:
             print('Troppi tag con lo stesso nome')
+            print(tags[0])
             exit()
         if len(tags) < 1:
             print('Tag {} associato alla chiave {} non esistente\n'.format(
@@ -253,7 +266,33 @@ class InputIpi(InputTemplate):
             rtemp.text = '[' + rtemp_list + ']'
             stride.text = ' {:5d} '.format(rstride)
             self._set_attrib('system', 'copies', str(nreps))
+            if self._options['bias']:
+                bias_list = [0 for x in temp_list]
+                rbias = etree.SubElement(rem, 'bias_list')
+                rbias_list = ', '.join([str(x) for x in bias_list])
+                rbias.text = '[' + rbias_list + ']'
 
+    def _set_bias(self):
+        # Add bias to the system
+        system = self.input_xml.findall('./system')[0]
+        bias = etree.SubElement(system, 'bias')
+        bias_force = etree.SubElement(bias, 'force')
+        bias_force.text = 'plumed_bias'
+
+        # Add force to the ffsocket
+        ffsocket = etree.SubElement(self.input_xml, 'ffsocket')
+        ffsocket.set('name', 'plumed_bias')
+        address = etree.SubElement(ffsocket, 'address')
+        port= etree.SubElement(ffsocket, 'port')
+        slots = etree.SubElement(ffsocket, 'slots')
+        timeout = etree.SubElement(ffsocket, 'timeout')
+        port.text = str(self._options['port_bias'])
+        address.text = str(self._options['address'])
+        slots.text = str(self._options['slots'])
+        timeout.text = str(self._options['timeout'])
+        
+        self._options.pop('port_bias')
+        
     def _compute_rem_temperature(self, maxtemp, mintemp, nreps):
         """Estimates the best temperature for the replica.
 
@@ -297,10 +336,12 @@ class InputIpi(InputTemplate):
         """Create the final input and return it as a string.
 
         """
-        print(self._options)
         if 'rem' in self._options:
-                self._set_rem()
-
+            self._set_rem()
+        if self._options['bias']:
+            self._set_bias()
+        self._options.pop('bias')
+                
         for k, v in self._options.items():
             sys.stderr.write('Setting: {:50s} -> {:50s}\n'.format(k, str(v)))
             if k not in self.index.keys():
@@ -308,15 +349,16 @@ class InputIpi(InputTemplate):
                     pass
                 elif k == 'isUnix':
                     if v == 'yes':
-                        self.input_xml.findall('./ffsocket')[0].set('mode', 'unix')
+                        for inst in self.input_xml.findall('./ffsocket'):
+                            inst.set('mode', 'unix')
                     else:
-                        self.input_xml.findall('./ffsocket')[0].set('mode', 'inet')
-                elif k == 'title':
+                        for inst in self.input_xml.findall('./ffsocket'):
+                            inst.set('mode', 'inet')
+                elif k == 'title' or k == 'bias':
                     continue
                 else:
                     raise(IndexError(
                         'Keyword: {} not found in the index'.format(k)))
-                    sys.exit()
             else:
                 self._set_value(k, str(v))
             self.indent(self.input_xml)

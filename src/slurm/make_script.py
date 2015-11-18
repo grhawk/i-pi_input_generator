@@ -62,10 +62,11 @@ __status__ = 'development'
 
 
 class sbatchDftbScript(object):
-    def __init__(self, title='dftbJob', mem=1000, task_per_node=1):
+    def __init__(self, title='dftbJob', mem=1000, task_per_node=1, executable='dftb+'):
         self.workdir = '$PWD'
         self.title = os.path.basename(title)
         self.mem = mem
+        self.executable = executable
         self.nodes = 1
         self.ntasks_per_nodes = task_per_node
         self.stderr = os.path.join('/home/petragli/err/',
@@ -77,7 +78,7 @@ class sbatchDftbScript(object):
 
         self.config = dict(
             sources=['intel/15.0.3',],
-            bin='/home/petragli/Software/dftbp-ipi/prg_dftb/_obj_x86_64-linux-ifort-aries/dftb+',
+            bin=self.executable,
             # bin='/home/petragli/MyCodes/dftbp-ipi/prg_dftb/_obj_x86_64-linux-gfortran/dftb+'
         )
 

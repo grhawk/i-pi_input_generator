@@ -61,9 +61,11 @@ def main():
 
     sbatch_script = sbatch(title=title_for_sbatch,
                            mem=args['mem'],
-                           task_per_node=args['processors'])
+                           task_per_node=args['processors'],
+                           executable=args['dftb_exe'])
     args.pop('mem')
     args.pop('processors')
+    args.pop('dftb_exe')
 
     # Write data to the dftb input
     geo = GeoIo()
@@ -121,6 +123,9 @@ def _validate_args(args):
     else:
         notNone_option['port'] = portsMaster.giveme_a_port()
 
+    if notNone_option['bias']:
+        notNone_option['port_bias'] = portsMaster.giveme_a_port()
+
     if 'title' not in notNone_option:
         notNone_option['title'] = notNone_option['xyzfile']
 
@@ -175,6 +180,11 @@ def _parser():
     rem.add_argument('-rt', '--rstride',
                      action='store',
                      type=int,
+                     help='Steps between two replica exchanging attemps')
+
+    rem.add_argument( '--bias',
+                     action='store_true',
+                     default=False,
                      help='Steps between two replica exchanging attemps')
 
     ensemble = parser.add_argument_group('Ensemble',
@@ -248,6 +258,10 @@ def _parser():
                        default='3ob',
                        choices=['3ob', 'OCo'],
                        help='Set the dftbp parameters as you plese')
+    dftbp.add_argument('--dftb-exe',
+                       action='store',
+                       default='dftb+',
+                       help='Set the dftb executable path')
 
     submit = parser.add_argument_group('Submitting parameters',
                                        'Setting to create the sbatch script')
