@@ -67,7 +67,7 @@ dftb_sessions={nreps}
 TMPFILE=submit.$$
 
 function start_dftb() {{
-    touch RUNNING.lock
+    touch RUNNING_DFTBP.lock
     cp -f ../dftb_in.hsd .
     sed s/pippopluto_title/{title}-$1/g ../{sbatch_filename} > $TMPFILE; mv $TMPFILE dftb.dftbp.sh
     sbatch dftb.dftbp.sh
@@ -78,7 +78,7 @@ for i in `seq 1 $dftb_sessions`; do
     if [[ -e $name ]]; then
         echo "Directory $name exists, checking if used.."
         cd $name
-        if [[ `ls RUNNING.lock &>/dev/null; echo $?` -ne 0 ]]; then
+        if [[ `ls RUNNING_DFTBP.lock &>/dev/null; echo $?` -ne 0 ]]; then
             echo "Not used... restarting dftb+"
             start_dftb $i
         else
@@ -90,6 +90,52 @@ for i in `seq 1 $dftb_sessions`; do
         mkdir $name
         cd $name
         start_dftb $i
+        cd ..
+    fi
+done
+""".format(nreps=nreps, title=title, sbatch_filename=sbatch_filename)
+        self.write()
+
+    def write(self):
+        return self.script_file
+
+class runManyPlumedScript(object):
+    def __init__(self, nreps=1, title='plumedJob',
+                 sbatch_filename='plumed.sbatch'):
+
+        self.script_file = """#!/bin/bash
+
+set -o nounset
+set -e pipefail
+
+plumed_sessions={nreps}
+
+TMPFILE=submit.$$
+
+function start_plumed() {{
+    touch RUNNING_PLUMED.lock
+    cp -f ../plumed.dat .
+    sed s/pippopluto_title/plu-{title}-$1/g ../{sbatch_filename} > $TMPFILE; mv $TMPFILE plumed.sbatch.sh
+    sbatch plumed.sbatch.sh
+}}
+
+for i in `seq 1 $plumed_sessions`; do
+    name=`printf 'BIAS-%03i' $i`
+    if [[ -e $name ]]; then
+        echo "Directory $name exists, checking if used.."
+        cd $name
+        if [[ `ls RUNNING_PLUMED.lock &>/dev/null; echo $?` -ne 0 ]]; then
+            echo "Not used... restarting dftb+"
+            start_plumed $i
+        else
+            echo "Directory $name already used"
+        fi
+        cd ..
+    else
+        echo "Creating $name and starting plumed"
+        mkdir $name
+        cd $name
+        start_plumed $i
         cd ..
     fi
 done

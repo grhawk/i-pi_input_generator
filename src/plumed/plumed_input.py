@@ -34,8 +34,71 @@ __email__ = 'riccardo.petraglia@gmail.com'
 __status__ = 'development'
 
 class plumed2(object):
-    pass
+    def __init__(self, xyzpath=None, options=None):
+        self.options = options
+        pdbp = xyzpath[:-4]+'.pdb'
+        
+        self.connections = connectivity()
+    
+        with open(pdbp) as pdbf:
+            for line in pdbf:
+                if line.find('CONECT') > -1:
+                    # print(line)
+                    atoms = line.split()[1:]
+                    for at in atoms[1:]:
+                        self.connections.add(atoms[0], at)
 
+    def write(self, outfile):
+        distance_tmpl = 'DISTANCE ATOMS={at1:d},{at2:d} LABEL=b{at1:d}{at2:d}\n'
+        restraint_tmpl = 'RESTRAINT ARG=b{at1:d}{at2:d} AT=0.14 KAPPA=750.0 LABEL=r{at1:d}{at2:d}\n'
+        msg = '# Plumed input generated automatically by inputsGen\n'
+        for bond in self.connections:
+            msg += distance_tmpl.format(at1=bond.bond[0], at2=bond.bond[1])
+
+        msg += '\n\n\n'
+        for bond in self.connections:
+            msg += restraint_tmpl.format(at1=bond.bond[0], at2=bond.bond[1])
+
+        with open(outfile, 'w') as outf:
+            outf.write(msg+'\n')
+
+        msg = '#!/bin/bash\n'
+        msg += '#SBATCH -J plumed-pippopluto_title\n'
+        msg += '#SBATCH -e /home/petragli/err/pippopluto_titlestderr_%j\n'
+        msg += '#SBATCH -o /home/petragli/err/pippopluto_titlestdout_%j\n'
+        msg += '#SBATCH --mem=1000\n'
+        msg += '#SBATCH --nodes=1\n'
+        msg += '#SBATCH --ntasks-per-node=1\n'
+        msg += '\n'
+
+        msg += '''
+
+WORKING_DIR=$PWD
+TMPDIR=$SLURM_TMPDIR
+
+function coping_back() {
+    rsync -ca $TMPDIR/ $WORKING_DIR/
+    if [[ -e $WORKING_DIR/RUNNING_PLUMED.lock ]]; then
+        rm -f $WORKING_DIR/RUNNING_PLUMED.lock
+    fi
+}
+
+trap 'coping_back' TERM EXIT
+
+cd $TMPDIR
+cp -ar $WORKING_DIR/plumed.dat $TMPDIR
+touch $WORKDIR/RUNNING_plumed.lock
+
+source ~/REM@DFTB-bias/env/set_plumed.sh
+
+'''
+        msg += 'plumed socket --plumed {outfile:s} --host {address:s} --port {port:s} > $WORKING_DIR/plumed.out\n'.format(outfile=outfile, address=self.options['address'], port=str(self.options['port_bias']))
+        msg += '\nexit\n'
+
+        
+        with open('plumed.sbatch', 'w') as outf:
+            outf.write(msg)
+            
 
 class connection(object):
     def __init__(self, at1, at2):
@@ -53,6 +116,7 @@ class connection(object):
         msg = 'BOND1: {:4d} -- {:4d}\n'.format(self.bond[0], self.bond[1])
         return msg
 
+    
 class connectivity(object):
     def __init__(self):
         self.connectivity = []

@@ -123,8 +123,8 @@ export OMP_NUM_THREADS={ntasks_per_node}
             """
 function coping_back() {
     rsync -ca $TMP_DIR/ $WORKING_DIR/
-    if [[ -e $WORKING_DIR/RUNNING.lock ]]; then
-        rm -f $WORKING_DIR/RUNNING.lock
+    if [[ -e $WORKING_DIR/RUNNING_DFTBP.lock ]]; then
+        rm -f $WORKING_DIR/RUNNING_DFTBP.lock
     fi
 }
 
@@ -137,7 +137,7 @@ trap 'coping_back' TERM EXIT
 cd $TMP_DIR
 cp -ar $WORKING_DIR/dftb_in.hsd $TMP_DIR
 
-touch $WORKING_DIR/RUNNING.lock
+touch $WORKING_DIR/RUNNING_DFTBP.lock
 {bin} dftb_in.hsd > {outputdir}/{outputfile}
 
 exit()

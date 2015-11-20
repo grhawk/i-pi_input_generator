@@ -132,8 +132,6 @@ class DftbPreset(object):
                 Hamiltonian_Filling_Temperature=300 * 0.000003166808534191,
                 Hamiltonian_KPointsAndWeights_='',
                 Hamiltonian_KPointsAndWeights_empty='.5 .5 .5 1.0',
-                Hamiltonian_Dispersion_='LennardJones',
-                Hamiltonian_Dispersion_Parameters='UFFParameters{}',
             ),
             noscc=dict(
                 _names=['noscc', 'busch', 'OCo'],

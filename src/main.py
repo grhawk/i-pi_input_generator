@@ -25,6 +25,8 @@ import dftbp.input_dftb as dftb
 from libs.io_geo import GeoIo
 from slurm.make_script import sbatchDftbScript as sbatch
 from slurm.make_runMany import runManyDftbScript as rMany
+from slurm.make_runMany import runManyPlumedScript as rPMany
+from plumed.plumed_input import plumed2 as plmd2
 
 # Try determining the version from git:
 try:
@@ -67,11 +69,31 @@ def main():
     args.pop('processors')
     args.pop('dftb_exe')
 
+    if args['bias']:
+        if args['isUnix']:
+            msg = 'Bias can be used only over internet, unix not implemented.'
+            raise(NotImplementedError(msg))
+        if not os.path.isfile(args['xyzfile'][:-4]+'.pdb'):
+            print(args['xyzfile'][:-4]+'.pdb')
+            msg = 'FileNotFound: {out:s}.\n\n'\
+                  'The command:\nobabel {inf:s} -O{out:s}\ncan helps.'.format(
+                      out=args['xyzfile'][:-4]+'.pdb', inf=args['xyzfile'])
+            raise(IOError(msg))
+        plmd2(args['xyzfile'], options=args).write('plumed.dat')
+        rmscript = rPMany(nreps=args['slots'],
+                         title=args['title']).write()
+        with open('runManyPlumed.sh', 'w') as runManyf:
+            runManyf.write(rmscript)
+        st = os.stat('runManyPlumed.sh')
+        os.chmod('runManyPlumed.sh', st.st_mode | stat.S_IEXEC)
+
+
+
     # Write data to the dftb input
     geo = GeoIo()
     geo.xyz_read(args['xyzfile'])
     if not geo.periodic:
-        geo.set_cell([50., 50., 50.])
+        geo.set_cell([100., 100., 100.])
     dftbpI = dftb.InputDftb(geo, config['SKfileLocation'])
     dftbpI.add_keyword('Driver_Protocol', 'i-PI{}')
     dftbpI.add_keyword('Driver_MaxSteps', 10000000)
@@ -80,6 +102,12 @@ def main():
     else:
         dftbpI.add_keyword('Driver_Host', args['address'])
         dftbpI.add_keyword('Driver_Port', args['port'])
+    if not args.pop('ddmc'):
+        dftbpI.add_keyword('Hamiltonian_Dispersion_', 'LennardJones')
+        dftbpI.add_keyword('Hamiltonian_Dispersion_Parameters','UFFParameters{}')
+    else:
+        dftbpI.add_keyword('Hamiltonian_Dispersion', 'dDMC {}')
+
     dftbpI.set_preset(args.pop('dftb_type'))
 
     with open('dftb_in.hsd', 'w') as dftbf:
@@ -262,6 +290,10 @@ def _parser():
                        action='store',
                        default='dftb+',
                        help='Set the dftb executable path')
+    dftbp.add_argument('--ddmc',
+                       action='store_true',
+                       default=False,
+                       help='If specified will use ddmc instead of UFF dispersion correction')
 
     submit = parser.add_argument_group('Submitting parameters',
                                        'Setting to create the sbatch script')

@@ -267,7 +267,14 @@ class InputIpi(InputTemplate):
             stride.text = ' {:5d} '.format(rstride)
             self._set_attrib('system', 'copies', str(nreps))
             if self._options['bias']:
-                bias_list = [0 for x in temp_list]
+                bias_list = []
+                for x in temp_list:
+                    if x < 1800 and x > 1500:
+                        bias_list.append(0.5)
+                    elif x > 1500:
+                        bias_list.append(1)
+                    else:
+                        bias_list.append(0)
                 rbias = etree.SubElement(rem, 'bias_list')
                 rbias_list = ', '.join([str(x) for x in bias_list])
                 rbias.text = '[' + rbias_list + ']'
