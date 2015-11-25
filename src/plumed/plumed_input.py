@@ -50,7 +50,7 @@ class plumed2(object):
 
     def write(self, outfile):
         distance_tmpl = 'DISTANCE ATOMS={at1:d},{at2:d} LABEL=b{at1:d}{at2:d}\n'
-        restraint_tmpl = 'RESTRAINT ARG=b{at1:d}{at2:d} AT=0.14 KAPPA=750.0 LABEL=r{at1:d}{at2:d}\n'
+        restraint_tmpl = 'RESTRAINT ARG=b{at1:d}{at2:d} AT=0.14 KAPPA=2000.0 LABEL=r{at1:d}{at2:d}\n'
         msg = '# Plumed input generated automatically by inputsGen\n'
         for bond in self.connections:
             msg += distance_tmpl.format(at1=bond.bond[0], at2=bond.bond[1])
