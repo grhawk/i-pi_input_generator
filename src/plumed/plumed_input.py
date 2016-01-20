@@ -87,8 +87,9 @@ trap 'coping_back' TERM EXIT
 
 cd $TMPDIR
 cp -ar $WORKING_DIR/plumed.dat $TMPDIR
-touch $WORKDIR/RUNNING_plumed.lock
+touch $WORKING_DIR/RUNNING_plumed.lock
 
+source ~/REM@DFTB-bias/env/set_tree.sh
 source ~/REM@DFTB-bias/env/set_plumed.sh
 
 '''

@@ -17,7 +17,7 @@ temperature, time_step etc.
 import xml.etree.ElementTree as etree
 import sys
 import scipy.optimize as optim
-
+import numpy as np
 
 # Try determining the version from git:
 try:
@@ -250,11 +250,12 @@ class InputIpi(InputTemplate):
                 mintemp = self._options.pop('Tmin')
                 nreps = self._options.pop('nrep')
                 rstride = self._options.pop('rstride')
+                steep = self._options.pop('steep')
             except KeyError:
                 raise(MissingKeywordError(
                     'You miss some REM keyword'))
 
-            temp_list = self._compute_rem_temperature(maxtemp, mintemp, nreps)
+            temp_list = self._compute_rem_temperature(maxtemp, mintemp, nreps, steep)
 
             rem = etree.SubElement(self.input_xml, 'paratemp')
             rtemp = etree.SubElement(rem, 'temp_list')
@@ -300,7 +301,7 @@ class InputIpi(InputTemplate):
         
         self._options.pop('port_bias')
         
-    def _compute_rem_temperature(self, maxtemp, mintemp, nreps):
+    def _compute_rem_temperature(self, maxtemp, mintemp, nreps, steep):
         """Estimates the best temperature for the replica.
 
         This subroutine uses the RemTemperatures code to estimates the best
@@ -315,7 +316,7 @@ class InputIpi(InputTemplate):
         Todo: implement something serius... :)
         """
 
-        temp_list = remTempEstimator(mintemp, maxtemp, nreps).t_list
+        temp_list = remTempEstimator(mintemp, maxtemp, nreps, steep).t_list
         return temp_list
 
     def indent(self, elem, level=0):
@@ -375,28 +376,32 @@ class InputIpi(InputTemplate):
 
 class remTempEstimator(list):
 
-    def __init__(self, tmin, tmax, N):
+    def __init__(self, tmin, tmax, N, steep):
         factor = 2  # To initialize the least square method
-        f = optim.leastsq(self._tominimize, factor, args=(tmin, tmax, N))[0][0]
-        self.t_list = self._getTemps(tmin, N, f)
+        f = optim.leastsq(self._tominimize, factor, args=(tmin, tmax, N, steep))[0][0]
+        self.t_list = self._getTemps(tmin, N, f, steep)
+        with open('TLIST.dat', 'w') as f:
+            for t in self.t_list:
+                f.write('{:12.6f}\n'.format(t))
 #        print(self)
 
-    def _tominimize(self, f, tmin, tmax, N):
-        temp_list = self._getTemps(tmin, N, f)
+    def _tominimize(self, f, tmin, tmax, N, steep):
+        temp_list = self._getTemps(tmin, N, f, steep)
         return tmax - temp_list[-1]
 
-    def _getTemps(self, tmin, N, f):
+    def _getTemps(self, tmin, N, f, steep):
 
         rem_t = [tmin]
         while True:
             if len(rem_t) == N: break
-            rem_t.append(rem_t[-1] + self._DeltaT(rem_t[-1], f))
+            rem_t.append(rem_t[-1] + self._DeltaT(rem_t[-1], f, len(rem_t), steep))
 
         return rem_t
 
 
-    def _DeltaT(self, T, f):
-        return T * f
+    def _DeltaT(self, T, f, n=1, c=1):
+        return f * (np.exp(c*n) - np.exp(c*n-c))
+        # return T * f
 
 
 

@@ -200,6 +200,12 @@ def _parser():
                            type=float,
                            help='Highest REM temperature')
 
+    rem.add_argument('--steep',
+                           action='store',
+                           type=float,
+                           default = .6,
+                           help='Steep of the temperature increases')
+
     rem.add_argument('--nrep',
                            action='store',
                            type=int,

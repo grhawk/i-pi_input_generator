@@ -125,7 +125,7 @@ for i in `seq 1 $plumed_sessions`; do
         echo "Directory $name exists, checking if used.."
         cd $name
         if [[ `ls RUNNING_PLUMED.lock &>/dev/null; echo $?` -ne 0 ]]; then
-            echo "Not used... restarting dftb+"
+            echo "Not used... restarting plumed2"
             start_plumed $i
         else
             echo "Directory $name already used"
