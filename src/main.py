@@ -126,13 +126,13 @@ def main():
     with open('dftbp.sbatch', 'w') as sbatchf:
         sbatchf.write(sbatch_script.write())
 
-    if args['rem'] == 'yes':
-        rmscript = rMany(nreps=args['slots'],
-                         title=args['title']).write()
-        with open('runMany.sh', 'w') as runManyf:
-            runManyf.write(rmscript)
-        st = os.stat('runMany.sh')
-        os.chmod('runMany.sh', st.st_mode | stat.S_IEXEC)
+    # if args['rem'] == 'yes':
+    rmscript = rMany(nreps=args['slots'],
+                     title=args['title']).write()
+    with open('runMany.sh', 'w') as runManyf:
+        runManyf.write(rmscript)
+    st = os.stat('runMany.sh')
+    os.chmod('runMany.sh', st.st_mode | stat.S_IEXEC)
 
 
 def _validate_args(args):
@@ -170,8 +170,9 @@ def _validate_args(args):
         c2 = 'Tmax' not in notNone_option
         c3 = 'nrep' not in notNone_option
         c4 = 'rstride' not in notNone_option
+        c5 = 'steep' not in notNone_option
 
-        if c1 or c2 or c3 or c4:
+        if c1 or c2 or c3 or c4 or c5:
                 raise(RuntimeError('When you want to do rem, you have to specify everyting!'))
 
         notNone_option.pop('mode')
@@ -203,7 +204,6 @@ def _parser():
     rem.add_argument('--steep',
                            action='store',
                            type=float,
-                           default = .6,
                            help='Steep of the temperature increases')
 
     rem.add_argument('--nrep',
