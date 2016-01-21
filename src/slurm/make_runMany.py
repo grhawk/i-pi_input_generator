@@ -114,7 +114,7 @@ TMPFILE=submit.$$
 
 function start_plumed() {{
     touch RUNNING_PLUMED.lock
-    cp -f ../plumed.dat .
+    cp -f ../plumed.dat ../*.pdb .
     sed s/pippopluto_title/plu-{title}-$1/g ../{sbatch_filename} > $TMPFILE; mv $TMPFILE plumed.sbatch.sh
     sbatch plumed.sbatch.sh
 }}

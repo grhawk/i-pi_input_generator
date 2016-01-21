@@ -36,11 +36,11 @@ __status__ = 'development'
 class plumed2(object):
     def __init__(self, xyzpath=None, options=None):
         self.options = options
-        pdbp = xyzpath[:-4]+'.pdb'
+        self.pdbp = xyzpath[:-4]+'.pdb'
         
         self.connections = connectivity()
     
-        with open(pdbp) as pdbf:
+        with open(self.pdbp) as pdbf:
             for line in pdbf:
                 if line.find('CONECT') > -1:
                     # print(line)
@@ -50,8 +50,10 @@ class plumed2(object):
 
     def write(self, outfile):
         distance_tmpl = 'DISTANCE ATOMS={at1:d},{at2:d} LABEL=b{at1:d}{at2:d}\n'
-        restraint_tmpl = 'RESTRAINT ARG=b{at1:d}{at2:d} AT=0.14 KAPPA=2000.0 LABEL=r{at1:d}{at2:d}\n'
+        restraint_tmpl = 'RESTRAINT ARG=b{at1:d}{at2:d} AT=1.4 KAPPA=2000.0 LABEL=r{at1:d}{at2:d}\n'
         msg = '# Plumed input generated automatically by inputsGen\n'
+        msg+= 'UNITS LENGTH=.1 #Use Angstrom\n'
+        msg+= 'MOLINFO STRUCTURE={:s}\n\n'.format(self.pdbp)
         for bond in self.connections:
             msg += distance_tmpl.format(at1=bond.bond[0], at2=bond.bond[1])
 
@@ -86,8 +88,8 @@ function coping_back() {
 trap 'coping_back' TERM EXIT
 
 cd $TMPDIR
-cp -ar $WORKING_DIR/plumed.dat $TMPDIR
-touch $WORKING_DIR/RUNNING_plumed.lock
+cp -ar $WORKING_DIR/plumed.dat $WORKING_DIR/*.pdb $TMPDIR
+touch $WORKING_DIR/RUNNING_PLUMED.lock
 
 source ~/REM@DFTB-bias/env/set_tree.sh
 source ~/REM@DFTB-bias/env/set_plumed.sh
