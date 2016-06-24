@@ -60,8 +60,7 @@ def main():
     """
     args = _validate_args(_parser())
 
-    exit()
-    if args['rem'] == 'yes':
+    if args['mode'] == 'rem':
         title_for_sbatch = 'pippopluto_title'
     else:
         title_for_sbatch = args['title']
@@ -73,7 +72,7 @@ def main():
                            user=config['username'])
 
     if args['bias']:
-        if args['isUnix']:
+        if args['is_unix']:
             msg = 'Bias can be used only over internet, unix not implemented.'
             raise(NotImplementedError(msg))
         if not os.path.isfile(args['xyzfile'][:-4]+'.pdb'):
@@ -100,18 +99,18 @@ def main():
     dftbpI = dftb.InputDftb(geo, config['SKfileLocation'])
     dftbpI.add_keyword('Driver_Protocol', 'i-PI{}')
     dftbpI.add_keyword('Driver_MaxSteps', 10000000)
-    if args['isUnix']:
+    if args['is_unix']:
         dftbpI.add_keyword('Driver_File', args['address'])
     else:
         dftbpI.add_keyword('Driver_Host', args['address'])
-        dftbpI.add_keyword('Driver_Port', args['port'])
-    if not args.pop('ddmc'):
+        dftbpI.add_keyword('Driver_Port', args['port_dftb'])
+    if not args['ddmc']:
         dftbpI.add_keyword('Hamiltonian_Dispersion_', 'LennardJones')
         dftbpI.add_keyword('Hamiltonian_Dispersion_Parameters','UFFParameters{}')
     else:
         dftbpI.add_keyword('Hamiltonian_Dispersion', 'dDMC {}')
 
-    dftbpI.set_preset(args.pop('dftb_type'))
+    dftbpI.set_preset(args['dftb_type'])
 
     with open('dftb_in.hsd', 'w') as dftbf:
         dftbf.write(dftbpI.write())
@@ -119,8 +118,8 @@ def main():
     # Write data to the ipi input
     ipiI = ipi.InputIpi()
     for k, v in args.items():
-        if k == 'mode': continue
-        ipiI.set(k, v)
+        if k not in ['title', 'ddmc', 'mem', 'processors', 'dftb_type']:
+            ipiI.set(k, v)
 
     with open('ipi_input.xml', 'wb') as ipif:
         # print(type(ipiI.create_input()))

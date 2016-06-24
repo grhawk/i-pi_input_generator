@@ -58,7 +58,7 @@ class InputTemplate(object):
   <total_steps> NSTEPS </total_steps>
   <ffsocket mode="inet" name='dftbuff'>
     <address> ADDRESS </address>
-    <port> PORT </port>
+    <port> PORT_DFTB </port>
     <slots> NUMBEROFSLOTS </slots>
     <timeout> TIMEOUT </timeout>
   </ffsocket>
@@ -107,7 +107,7 @@ class InputTemplate(object):
         self.index = dict(
             # FFSOCKET
             address='./ffsocket/address',
-            port='./ffsocket/port',
+            port_dftb='./ffsocket/port',
             slots='./ffsocket/slots',
             timeout='./ffsocket/timeout',
             # SYSTEM
@@ -218,9 +218,7 @@ class InputIpi(InputTemplate):
     """
     def __init__(self):
         super().__init__()
-        self._options = dict(
-            rem='no'
-        )
+        self._options = {}
 
     def set(self, key, value):
         """Set (add/edit) value in the _options dictionary in a safe way.
@@ -243,43 +241,42 @@ class InputIpi(InputTemplate):
             This method should use the _add method of the template class...
 
         """
-        rem = self._options.pop('rem')
-        if rem.lower() == 'yes':
-            try:
-                maxtemp = self._options.pop('Tmax')
-                mintemp = self._options.pop('Tmin')
-                nreps = self._options.pop('nrep')
-                rstride = self._options.pop('rstride')
-                steep = self._options.pop('steep')
-            except KeyError:
-                raise(MissingKeywordError(
-                    'You miss some REM keyword'))
+        try:
+            maxtemp = self._options.pop('Tmax')
+            mintemp = self._options.pop('Tmin')
+            nreps = self._options.pop('nrep')
+            rstride = self._options.pop('rstride')
+            steep = self._options.pop('steep')
+        except KeyError:
+            raise(MissingKeywordError(
+                'You miss some REM keyword'))
 
-            temp_list = self._compute_rem_temperature(maxtemp, mintemp, nreps, steep)
+        temp_list = self._compute_rem_temperature(maxtemp, mintemp, nreps,
+                                                  steep)
 
-            rem = etree.SubElement(self.input_xml, 'paratemp')
-            rtemp = etree.SubElement(rem, 'temp_list')
-            stride = etree.SubElement(rem, 'stride')
-            self.input_xml.set('mode', 'paratemp')
-            rtemp.set('units', 'kelvin')
-            rtemp_list = ', '.join([str(x) for x in temp_list])
-            print('TEMPLIST:' + '[' + rtemp_list + ']')
-            rtemp.text = '[' + rtemp_list + ']'
-            stride.text = ' {:5d} '.format(rstride)
-            self._set_attrib('system', 'copies', str(nreps))
-            if self._options['bias']:
-                bias_list = []
-                for x in temp_list:
-                    # if x < 1800 and x > 1500:
-                    #     bias_list.append(0.5)
-                    # elif x > 1500:
-                    #     bias_list.append(1)
-                    # else:
-                    #     bias_list.append(0)
-                    bias_list.append(1)
-                rbias = etree.SubElement(rem, 'bias_list')
-                rbias_list = ', '.join([str(x) for x in bias_list])
-                rbias.text = '[' + rbias_list + ']'
+        rem = etree.SubElement(self.input_xml, 'paratemp')
+        rtemp = etree.SubElement(rem, 'temp_list')
+        stride = etree.SubElement(rem, 'stride')
+        self.input_xml.set('mode', 'paratemp')
+        rtemp.set('units', 'kelvin')
+        rtemp_list = ', '.join([str(x) for x in temp_list])
+        print('TEMPLIST:' + '[' + rtemp_list + ']')
+        rtemp.text = '[' + rtemp_list + ']'
+        stride.text = ' {:5d} '.format(rstride)
+        self._set_attrib('system', 'copies', str(nreps))
+        if self._options['bias']:
+            bias_list = []
+            for __t in temp_list:
+                # if x < 1800 and x > 1500:
+                #     bias_list.append(0.5)
+                # elif x > 1500:
+                #     bias_list.append(1)
+                # else:
+                #     bias_list.append(0)
+                bias_list.append(1)
+            rbias = etree.SubElement(rem, 'bias_list')
+            rbias_list = ', '.join([str(__x) for __x in bias_list])
+            rbias.text = '[' + rbias_list + ']'
 
     def _set_bias(self):
         # Add bias to the system
@@ -300,7 +297,7 @@ class InputIpi(InputTemplate):
         slots.text = str(self._options['slots'])
         timeout.text = str(self._options['timeout'])
         
-        self._options.pop('port_bias')
+        self._options['port_bias']
         
     def _compute_rem_temperature(self, maxtemp, mintemp, nreps, steep):
         """Estimates the best temperature for the replica.
@@ -345,29 +342,20 @@ class InputIpi(InputTemplate):
         """Create the final input and return it as a string.
 
         """
-        if 'rem' in self._options:
+        if self._options['mode'] == 'rem':
             self._set_rem()
         if self._options['bias']:
             self._set_bias()
-        self._options.pop('bias')
                 
         for k, v in self._options.items():
             sys.stderr.write('Setting: {:50s} -> {:50s}\n'.format(k, str(v)))
-            if k not in self.index.keys():
-                if k == 'mode':
-                    pass
-                elif k == 'isUnix':
-                    if v == 'yes':
-                        for inst in self.input_xml.findall('./ffsocket'):
-                            inst.set('mode', 'unix')
-                    else:
-                        for inst in self.input_xml.findall('./ffsocket'):
-                            inst.set('mode', 'inet')
-                elif k == 'title' or k == 'bias':
-                    continue
+            if k == 'is_unix':
+                if v:
+                    for inst in self.input_xml.findall('./ffsocket'):
+                        inst.set('mode', 'unix')
                 else:
-                    raise(IndexError(
-                        'Keyword: {} not found in the index'.format(k)))
+                    for inst in self.input_xml.findall('./ffsocket'):
+                        inst.set('mode', 'inet')
             else:
                 self._set_value(k, str(v))
             self.indent(self.input_xml)
