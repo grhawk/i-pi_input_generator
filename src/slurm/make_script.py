@@ -62,6 +62,9 @@ __status__ = 'development'
 
 
 class sbatchDftbScript(object):
+    """ Create the sbatch file for dftb+.
+    """
+
     def __init__(self, title='dftbJob', mem=1000, task_per_node=1, executable='dftb+'):
         self.workdir = '$PWD'
         self.title = os.path.basename(title)
