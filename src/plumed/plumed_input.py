@@ -50,7 +50,9 @@ class plumed2(object):
 
     def write(self, outfile):
         distance_tmpl = 'DISTANCE ATOMS={at1:d},{at2:d} LABEL=b{at1:d}{at2:d}\n'
-        restraint_tmpl = 'RESTRAINT ARG=b{at1:d}{at2:d} AT=1.4 KAPPA=2000.0 LABEL=r{at1:d}{at2:d}\n'
+        # restraint_tmpl = 'RESTRAINT ARG=b{at1:d}{at2:d} AT=1.4 KAPPA=2000.0 LABEL=r{at1:d}{at2:d}\n'
+        # Use UPPER AND LOWER WALLS instead of restreaint
+        restraint_tmpl = 'UPPER_WALLS ARG=b{at1:d}{at2:d} AT=1.4 KAPPA=2000.0 EXP=2. EPS=1. OFFSET=0. LABEL=r{at1:d}{at2:d}-uw\nLOWER_WALLS ARG=b{at1:d}{at2:d} AT=.5 KAPPA=2000.0 EXP=12. EPS=1. OFFSET=0. LABEL=r{at1:d}{at2:d}-lw\n'
         msg = '# Plumed input generated automatically by inputsGen\n'
         msg+= 'UNITS LENGTH=.1 #Use Angstrom\n'
         msg+= 'MOLINFO STRUCTURE={:s}\n\n'.format(self.pdbp)
