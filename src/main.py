@@ -14,8 +14,8 @@ Main file
 
 import sys
 import os
-heredir = os.path.dirname(os.path.abspath(os.path.realpath(sys.argv[0])))
-sys.path.append(os.path.join(heredir, 'ports/port-for'))
+HEREDIR = os.path.dirname(os.path.abspath(os.path.realpath(sys.argv[0])))
+sys.path.append(os.path.join(HEREDIR, 'ports/port-for'))
 
 import argparse
 import stat
