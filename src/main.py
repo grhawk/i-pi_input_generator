@@ -23,7 +23,7 @@ import ports.ports_master as portsMaster
 import ipi.input_ipi as ipi
 import dftbp.input_dftb as dftb
 from libs.io_geo import GeoIo
-from slurm.make_script import sbatchDftbScript as sbatch
+from slurm.make_script import SbatchDftbScript as sbatch
 from slurm.make_runMany import runManyDftbScript as rMany
 from slurm.make_runMany import runManyPlumedScript as rPMany
 from plumed.plumed_input import plumed2 as plmd2
@@ -31,17 +31,18 @@ from plumed.plumed_input import plumed2 as plmd2
 # Try determining the version from git:
 try:
     import subprocess
-    git_v = subprocess.check_output(['git', 'describe'],
-                                    stderr=subprocess.DEVNULL)
+    DEVNULL = open(os.devnull, 'w')
+    GIT_V = subprocess.check_output(['git', 'describe'],
+                                    stderr=DEVNULL)
 except subprocess.CalledProcessError:
-    git_v = b'Not Yet Tagged!'
+    GIT_V = b'Not Yet Tagged!'
 
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
 __updated__ = "2015-06-18"
 __license__ = 'GPLv2'
-__version__ = git_v
+__version__ = GIT_V
 __maintainer__ = 'Riccardo Petraglia'
 __email__ = 'riccardo.petraglia@gmail.com'
 __status__ = 'development'
@@ -49,11 +50,14 @@ __status__ = 'development'
 
 config = dict(
     SKfileLocation='/home/petragli/remd@dftb3/slako/',
-    username=os.getcwd().split('/')[2]
+    username=os.environ.get('USER'),
+    home=os.environ.get('HOME')
 )
 
 
 def main():
+    """ Main function.
+    """
     args = _validate_args(_parser())
 
     if args['rem'] == 'yes':
@@ -184,34 +188,39 @@ def _validate_args(args):
 
 
 def _ispositive(number):
+    """Simply return is a number is positive.
+    """
     return number > 0
 
 
 def _parser():
+    """Parse the arguments from command line.
+    """
+
     parser = argparse.ArgumentParser(
         description='Helps in building REM@DFTB input files.')
 
     rem = parser.add_argument_group('REM', 'REM variables')
     rem.add_argument('--Tmin',
-                           action='store',
-                           type=float,
-                           help='Smallest REM temperature')
+                     action='store',
+                     type=float,
+                     help='Smallest REM temperature')
 
     rem.add_argument('--Tmax',
-                           action='store',
-                           type=float,
-                           help='Highest REM temperature')
+                     action='store',
+                     type=float,
+                     help='Highest REM temperature')
 
     rem.add_argument('--steep',
-                           action='store',
-                           default=0.06,
-                           type=float,
-                           help='Steep of the temperature increases')
+                     action='store',
+                     default=0.06,
+                     type=float,
+                     help='Steep of the temperature increases')
 
     rem.add_argument('--nrep',
-                           action='store',
-                           type=int,
-                           help='Number of replicas')
+                     action='store',
+                     type=int,
+                     help='Number of replicas')
 
     rem.add_argument('-rt', '--rstride',
                      action='store',
@@ -219,7 +228,7 @@ def _parser():
                      type=int,
                      help='Steps between two replica exchanging attemps')
 
-    rem.add_argument( '--bias',
+    rem.add_argument('--bias',
                      action='store_true',
                      default=False,
                      help='Steps between two replica exchanging attemps')
@@ -238,7 +247,8 @@ def _parser():
                           help='Time step')
 
     initialize = parser.add_argument_group('Initialization',
-                                           'Parameters to initialize the system')
+                                           'Parameters to initialize the \
+                                           system')
     initialize.add_argument('xyzfile',
                             action='store',
                             type=str,
@@ -318,6 +328,7 @@ def _parser():
                         action='store',
                         default=1000,
                         help='Memeory requested for each DFTB+ instance')
+
     parser.add_argument('--version', '-v',
                         action='version',
                         version='%(prog)s ' + str(git_v, encoding='UTF-8'))
