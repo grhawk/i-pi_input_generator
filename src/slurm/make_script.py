@@ -69,15 +69,15 @@ class SbatchDftbScript(object):
     # Maybe pylint is right.... btw
 
     def __init__(self, title='dftbJob', mem=1000, task_per_node=1,
-                 executable='dftb+', user='student'):
+                 executable='dftb+', home='/home/student'):
         self.workdir = '$PWD'
         self.title = os.path.basename(title)
         self.mem = mem
         self.nodes = 1
         self.ntasks_per_nodes = task_per_node
-        self.stderr = os.path.join('/home/', user, '/err/',
+        self.stderr = os.path.join(home, 'err',
                                    os.path.basename(str(title)) + 'stderr_%j')
-        self.stdout = os.path.join('/home/', user, '/err/',
+        self.stdout = os.path.join(home, 'err',
                                    os.path.basename(str(title)) + 'stdout_%j')
         self.inputfile = 'dftb_in.hsd'
         self.outputfile = 'dftb.out'
@@ -109,7 +109,7 @@ class SbatchDftbScript(object):
 
         # Check if the stdout and stderr are writable
         for path in [self.stderr, self.stdout]:
-            if not os.access(path, os.W_OK):
+            if not os.access(os.path.dirname(path), os.W_OK):
                 raise(PermissionError('The directory {:s} is not writable!'.format(str(path))))
 
     def write(self):
@@ -176,7 +176,7 @@ exit()
                     outputfile=self.outputfile,
                     outputdir=self.outputdir)
 
-    return msg
+        return msg
 
 
 class FileNotFound(Exception):

@@ -63,13 +63,13 @@ def main():
     if args['rem'] == 'yes':
         title_for_sbatch = 'pippopluto_title'
     else:
-        title_for_sbatch = args['title']
+        titlen_for_sbatch = args['title']
 
     sbatch_script = sbatch(title=title_for_sbatch,
                            mem=args['mem'],
                            task_per_node=args['processors'],
                            executable=args['dftb_exe'],
-                           user=config['username'])
+                           home=config['home'])
     args.pop('mem')
     args.pop('processors')
     args.pop('dftb_exe')
@@ -331,7 +331,7 @@ def _parser():
 
     parser.add_argument('--version', '-v',
                         action='version',
-                        version='%(prog)s ' + str(git_v, encoding='UTF-8'))
+                        version='%(prog)s ' + str(GIT_V, encoding='UTF-8'))
 
 
     return vars(parser.parse_args())
