@@ -65,7 +65,7 @@ class InputTemplate(object):
   <output>
     <properties filename='md' stride='50' flush='10'>
      [step, time{picosecond}, conserved{kilocal/mol}, temperature{kelvin},
-     potential{kilocal/mol}, kinetic_md{kilocal/mol}]
+     potential{kilocal/mol}, kinetic_md{kilocal/mol}, bias_potential{kilocal/mol}, ensemble_logweight, hamiltonian_w]
     </properties>
     <trajectory filename='pos' stride='50' format='xyz' flush='1'>
         positions{angstrom}
@@ -270,12 +270,13 @@ class InputIpi(InputTemplate):
             if self._options['bias']:
                 bias_list = []
                 for x in temp_list:
-                    if x < 1800 and x > 1500:
-                        bias_list.append(0.5)
-                    elif x > 1500:
-                        bias_list.append(1)
-                    else:
-                        bias_list.append(0)
+                    # if x < 1800 and x > 1500:
+                    #     bias_list.append(0.5)
+                    # elif x > 1500:
+                    #     bias_list.append(1)
+                    # else:
+                    #     bias_list.append(0)
+                    bias_list.append(1)
                 rbias = etree.SubElement(rem, 'bias_list')
                 rbias_list = ', '.join([str(x) for x in bias_list])
                 rbias.text = '[' + rbias_list + ']'
