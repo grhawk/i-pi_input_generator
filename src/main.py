@@ -48,8 +48,8 @@ __status__ = 'development'
 
 
 config = dict(
-    SKfileLocation='/home/petragli/Store/SK-parameters/',
-    username='petragli'
+    SKfileLocation='/home/petragli/remd@dftb3/slako/',
+    username=os.getcwd().split('/')[2]
 )
 
 
@@ -64,7 +64,8 @@ def main():
     sbatch_script = sbatch(title=title_for_sbatch,
                            mem=args['mem'],
                            task_per_node=args['processors'],
-                           executable=args['dftb_exe'])
+                           executable=args['dftb_exe'],
+                           user=config['username'])
     args.pop('mem')
     args.pop('processors')
     args.pop('dftb_exe')
@@ -203,6 +204,7 @@ def _parser():
 
     rem.add_argument('--steep',
                            action='store',
+                           default=0.06,
                            type=float,
                            help='Steep of the temperature increases')
 
@@ -213,6 +215,7 @@ def _parser():
 
     rem.add_argument('-rt', '--rstride',
                      action='store',
+                     default=50,
                      type=int,
                      help='Steps between two replica exchanging attemps')
 
@@ -278,7 +281,7 @@ def _parser():
                                         'Parameters for the simulation')
     general.add_argument('--nstep',
                          action='store',
-                         default=50000)
+                         default=500000)
     general.add_argument('--mode',
                          action='store',
                          default='md',
@@ -289,8 +292,8 @@ def _parser():
                                       'Options to set the DFTB run')
     dftbp.add_argument('--dftb-type',
                        action='store',
-                       default='3ob',
-                       choices=['3ob', 'OCo'],
+                       default='3ob31',
+                       choices=['3ob', 'OCo','3ob31'],
                        help='Set the dftbp parameters as you plese')
     dftbp.add_argument('--dftb-exe',
                        action='store',

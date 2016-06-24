@@ -65,16 +65,16 @@ class sbatchDftbScript(object):
     """ Create the sbatch file for dftb+.
     """
 
-    def __init__(self, title='dftbJob', mem=1000, task_per_node=1, executable='dftb+'):
+    def __init__(self, title='dftbJob', mem=1000, task_per_node=1, executable='dftb+', user='This_Should_Be_Setted'):
         self.workdir = '$PWD'
         self.title = os.path.basename(title)
         self.mem = mem
         self.executable = executable
         self.nodes = 1
         self.ntasks_per_nodes = task_per_node
-        self.stderr = os.path.join('/home/petragli/err/',
+        self.stderr = os.path.join('/home/',user,'/err/',
                                    os.path.basename(str(title)) + 'stderr_%j')
-        self.stdout = os.path.join('/home/petragli/err/',
+        self.stdout = os.path.join('/home/',user,'/err/',
                                    os.path.basename(str(title)) + 'stdout_%j')
         self.inputfile = 'dftb_in.hsd'
         self.outputfile = 'dftb.out'

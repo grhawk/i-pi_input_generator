@@ -79,12 +79,53 @@ class DftbData(object):
                 Co="d"
             )
         )
+        threeob_3_1 = dict(
+            names = ['3ob31','3ob_3_1','3ob-3-1'],
+            hubbard_derivs = dict(
+                # From dftb.org 3ob_3_1
+                Br=-0.0573,
+                C =-0.1492,
+                Ca=-0.0340,
+                Cl=-0.0697,
+                F =-0.1623,
+                H =-0.1857,
+                I =-0.0433,
+                K =-0.0339,
+                Mg=-0.02,
+                N =-0.1535,
+                Na=-0.0454,
+                O =-0.1575,
+                S =-0.11,
+                Zn=-0.03
+            ),
+            damp_xh_exponent=4.0,
+            max_angular_momentum=dict(
+                Br='d',
+                C ='p',
+                Ca='p',
+                Cl='d',
+                F ='p',
+                H ='s',
+                I ='d',
+                K ='p',
+                Mg='p',
+                N ='p',
+                Na='p',
+                O ='p',
+                P ='p',
+                S ='d',
+                Zn='d'
+            )
+        )
+                
 
         print(parameters_set)
         if parameters_set in threeob_1_1['names']:
             self.prms = threeob_1_1
         elif parameters_set in mio_1_1trans3d['names']:
             self.prms = mio_1_1trans3d
+        elif parameters_set in threeob_3_1['names']:
+            self.prms = threeob_3_1
         else:
             raise ParametersSetNotFoundError(parameters_set)
 
@@ -121,6 +162,22 @@ class DftbPreset(object):
                 _names=['3ob', '3ob-1-1'],
                 _parameters_set='3ob-1-1',
                 _sk_directory='3ob-1-1',
+                Hamiltonian_ThirdOrderFull='Yes',
+                Hamiltonian_SCC='Yes',
+                Hamiltonian_Eigensolver='RelativelyRobust{}',
+                Hamiltonian_ReadInitialCharges='No',
+                Hamiltonian_MaxSCCIterations=500,
+                Hamiltonian_Charge=0,
+                Hamiltonian_DampXH='Yes',
+                Hamiltonian_Filling_='Fermi',
+                Hamiltonian_Filling_Temperature=300 * 0.000003166808534191,
+                Hamiltonian_KPointsAndWeights_='',
+                Hamiltonian_KPointsAndWeights_empty='.5 .5 .5 1.0',
+            ),
+            threeob_3_1=dict(
+                _names=['3ob31', '3ob-3-1'],
+                _parameters_set='3ob-3-1',
+                _sk_directory='3ob-3-1',
                 Hamiltonian_ThirdOrderFull='Yes',
                 Hamiltonian_SCC='Yes',
                 Hamiltonian_Eigensolver='RelativelyRobust{}',
