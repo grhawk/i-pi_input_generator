@@ -176,7 +176,7 @@ exit()
                     outputfile=self.outputfile,
                     outputdir=self.outputdir)
 
-    return msg
+        return msg
 
 
 class FileNotFound(Exception):

@@ -60,6 +60,7 @@ def main():
     """
     args = _validate_args(_parser())
 
+    exit()
     if args['rem'] == 'yes':
         title_for_sbatch = 'pippopluto_title'
     else:
@@ -70,9 +71,6 @@ def main():
                            task_per_node=args['processors'],
                            executable=args['dftb_exe'],
                            user=config['username'])
-    args.pop('mem')
-    args.pop('processors')
-    args.pop('dftb_exe')
 
     if args['bias']:
         if args['isUnix']:
@@ -141,50 +139,85 @@ def main():
 
 
 def _validate_args(args):
-    notNone_option = {}
+
+    all_options = {}
     for k, v in args.items():
-        if v is not None:
-            notNone_option[k] = v
-            if (isinstance(v, int) or isinstance(v, float)) and not (v == False or v == True):
-                if not _ispositive(v):
-                    raise(ValueError('The value of ' + str(k) + ' must be positive!'))
+        all_options[k] = v
 
-    if 'port' in notNone_option:
-        port = notNone_option['port']
-        if not portsMaster.is_port_free(port):
-            raise(ValueError('The port choosen ({}) is not available. Do not specify any port!'.format(port)))
+    dependancies = {}
+    dependancies['group'] = {}
+    dependancies['mandatory'] = ['is_unix', 'mode', 'timestep',
+                                 'nstep', 'slots',
+                                 'initial_temperature', 'timeout', 'dftb_type',
+                                 'dftb_exe', 'ddmc', 'processors', 'mem', 'xyzfile']
+    dependancies['optional'] = ['port_dftb', 'title']
+    dependancies['group']['mode:rem'] = ['Tmax', 'Tmin', 'nrep', 'rstride', 'steep']
+    dependancies['group']['mode:md'] = ['temperature']
+    dependancies['group']['bias:True'] = ['port_bias']
+    dependancies['group']['is_unix:True'] = ['address_dftb', 'address_bias']
+
+    return _check_dependancy(dependancies, all_options)
+    
+
+def _not_none(in_var, in_dict):
+    if in_dict[in_var] == None:
+        raise(ValueError('You must specify a value for {:}'.format(in_var)))
+
+def _check_value(string, in_dict):
+    if string.find('port') >= 0:
+        port = in_dict[string]
+        if port is not None and not portsMaster.is_port_free(port):
+            raise(ValueError('The port choosen ({:}) for {:} is not available.\
+            Do not specify any port!'.format(port, string)))
+        else:
+            in_dict[string] = portsMaster.giveme_a_port()
+
+    elif string == 'title':
+        if in_dict[string] == None:
+            in_dict[string] = in_dict['xyzfile']
+
+    elif string == 'is_unix':
+        if in_dict[string] and in_dict['address'] is None:
+            in_dict['address'] = str(in_dict['title']) + '_' + str(config['username'])
+            counter = 0         # To be sure the address is unique
+            address = in_dict['address']
+            while os.path.isfile(in_dict['address']):
+                in_dict['address'] = address+'_'+str(counter)
+                counter += 1
+        else:
+            _not_none(string, in_dict)
+            
     else:
-        notNone_option['port'] = portsMaster.giveme_a_port()
+        _not_none(string, in_dict)
 
-    if notNone_option['bias']:
-        notNone_option['port_bias'] = portsMaster.giveme_a_port()
+    return in_dict
 
-    if 'title' not in notNone_option:
-        notNone_option['title'] = notNone_option['xyzfile']
+        
 
-    if notNone_option['isUnix']:
-        notNone_option['isUnix'] = True
-        notNone_option['address'] = str(notNone_option['title']) + '_' + str(config['username'])
-    else:
-        notNone_option['isUnix'] = False
+def _check_dependancy(dep_dict, opt_dict):
 
+    for k in dep_dict.keys():
+        if k == 'mandatory':
+            for __v in dep_dict[k]:
+                _not_none(__v, opt_dict)
 
-    notNone_option['rem'] = 'no'
-    if notNone_option['mode'].lower() == 'rem':
-        c1 = 'Tmin' not in notNone_option
-        c2 = 'Tmax' not in notNone_option
-        c3 = 'nrep' not in notNone_option
-        c4 = 'rstride' not in notNone_option
-        c5 = 'steep' not in notNone_option
+    for k in dep_dict.keys():
+        if k == 'optional':
+            for __v in dep_dict[k]:
+                _check_value(__v, opt_dict)
+                print('OPTIONAL: ', k, __v, opt_dict[__v])
 
-        if c1 or c2 or c3 or c4 or c5:
-                raise(RuntimeError('When you want to do rem, you have to specify everyting!'))
+    for k in dep_dict.keys():
+        if k == 'group':
+            for k_1 in dep_dict[k].keys():
+                key, opt = k_1.split(':')
+                if str(opt_dict[key]) == opt:
+                    for __v in dep_dict[k][k_1]:
+                        _check_value(__v, opt_dict)
 
-        notNone_option.pop('mode')
-        notNone_option['rem'] = 'yes'
-        notNone_option['slots'] = notNone_option['nrep']
-
-    return notNone_option
+    print(opt_dict)
+    print('port_dftb', opt_dict['port_dftb'])
+    return opt_dict
 
 
 def _ispositive(number):
@@ -266,11 +299,16 @@ def _parser():
                           default='192.168.100.1',
                           type=str,
                           help='Ip address of the server')
-    ffsocket.add_argument('--port',
+    ffsocket.add_argument('--port_dftb',
                           action='store',
                           default=None,
                           type=int,
                           help='Port used by the socket. Leave it and I will try to find one')
+    ffsocket.add_argument('--port_bias',
+                          action='store',
+                          default=None,
+                          type=int,
+                          help='Port used by the socket when bias is required. Leave it and I will try to find one')
     ffsocket.add_argument('--slots',
                           action='store',
                           default=1,
@@ -284,7 +322,7 @@ def _parser():
     ffsocket.add_argument('--isUnix', '--isunix',
                           action='store_true',
                           default=False,
-                          dest='isUnix',
+                          dest='is_unix',
                           help='Select this option if you want to open a Unix Socket!.')
 
     general = parser.add_argument_group('General Parameters',
@@ -331,7 +369,7 @@ def _parser():
 
     parser.add_argument('--version', '-v',
                         action='version',
-                        version='%(prog)s ' + str(git_v, encoding='UTF-8'))
+                        version='%(prog)s ' + str(GIT_V, encoding='UTF-8'))
 
 
     return vars(parser.parse_args())
