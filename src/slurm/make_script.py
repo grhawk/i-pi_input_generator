@@ -45,61 +45,76 @@ import re
 # Try determining the version from git:
 try:
     import subprocess
-    git_v = subprocess.check_output(['git', 'describe'],
-                                    stderr=subprocess.DEVNULL)
+    DEVNULL = open(os.devnull, 'w')
+    GIT_V = subprocess.check_output(['git', 'describe'],
+                                    stderr=DEVNULL)
 except subprocess.CalledProcessError:
-    git_v = 'Not Yet Tagged!'
+    GIT_V = 'Not Yet Tagged!'
 
 
 __author__ = 'Riccardo Petraglia'
 __credits__ = ['Riccardo Petraglia']
-__updated__ = "2015-08-19"
+__updated__ = "2016-06-24"
 __license__ = 'GPLv2'
-__version__ = git_v
+__version__ = GIT_V
 __maintainer__ = 'Riccardo Petraglia'
 __email__ = 'riccardo.petraglia@gmail.com'
 __status__ = 'development'
 
 
-class sbatchDftbScript(object):
+class SbatchDftbScript(object):
     """ Create the sbatch file for dftb+.
     """
+    # pylint: disable=too-many-instance-attributes
+    # Maybe pylint is right.... btw
 
-    def __init__(self, title='dftbJob', mem=1000, task_per_node=1, executable='dftb+', user='This_Should_Be_Setted'):
+    def __init__(self, title='dftbJob', mem=1000, task_per_node=1,
+                 executable='dftb+', user='student'):
         self.workdir = '$PWD'
         self.title = os.path.basename(title)
         self.mem = mem
-        self.executable = executable
         self.nodes = 1
         self.ntasks_per_nodes = task_per_node
-        self.stderr = os.path.join('/home/',user,'/err/',
+        self.stderr = os.path.join('/home/', user, '/err/',
                                    os.path.basename(str(title)) + 'stderr_%j')
-        self.stdout = os.path.join('/home/',user,'/err/',
+        self.stdout = os.path.join('/home/', user, '/err/',
                                    os.path.basename(str(title)) + 'stdout_%j')
         self.inputfile = 'dftb_in.hsd'
         self.outputfile = 'dftb.out'
 
         self.config = dict(
             sources=['intel/15.0.3',],
-            bin=self.executable,
-            # bin='/home/petragli/MyCodes/dftbp-ipi/prg_dftb/_obj_x86_64-linux-gfortran/dftb+'
+            bin=executable,
         )
 
     def check_all(self):
+        """ Validate all the parameters.
+        """
+
         if not os.path.isfile(self.inputfile):
             raise FileNotFound('INPUTFILE', self.inputfile)
+
+        # If needed copy the input file to the "right" name
         if self.inputfile != 'dftb_in.hsd':
             shutil.copy2(self.inputfile, 'dftb_in.hsd')
             self.outputfile = self.inputfile[:-3] + 'out'
+
+        # I do not understand the meaining of the following!
         with open(self.inputfile) as ifile:
             for line in ifile:
                 if line.find('IPI') >= 0 and re.match(r'^\s*\#.*$', line):
-                        self.outputdir = '.'
+                    self.outputdir = '.'
                 else:
                     self.outputdir = self.workdir
 
-    def write(self):
+        # Check if the stdout and stderr are writable
+        for path in [self.stderr, self.stdout]:
+            if not os.access(path, os.W_OK):
+                raise(PermissionError('The directory {:s} is not writable!'.format(str(path))))
 
+    def write(self):
+        """ Write the sbatch file.
+        """
         self.check_all()
 
         init = \
@@ -147,23 +162,21 @@ exit()
 """.format
 
         msg = \
-            init(title=self.title,
-                 stderr=self.stderr,
-                 stdout=self.stdout,
-                 mem=self.mem,
-                 nodes=self.nodes,
-                 ntasks_per_node=self.ntasks_per_nodes,
-                 inputfile=self.inputfile,
-                 workdir=self.workdir,
-                 ) + \
-            sources + \
-            functions + \
-            works(bin=self.config['bin'],
-                  outputfile=self.outputfile,
-                  outputdir=self.outputdir
-                  )
+              init(title=self.title,
+                   stderr=self.stderr,
+                   stdout=self.stdout,
+                   mem=self.mem,
+                   nodes=self.nodes,
+                   ntasks_per_node=self.ntasks_per_nodes,
+                   inputfile=self.inputfile,
+                   workdir=self.workdir, ) + \
+              sources + \
+              functions + \
+              works(bin=self.config['bin'],
+                    outputfile=self.outputfile,
+                    outputdir=self.outputdir)
 
-        return msg
+    return msg
 
 
 class FileNotFound(Exception):
