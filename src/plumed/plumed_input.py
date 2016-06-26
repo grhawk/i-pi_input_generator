@@ -52,10 +52,21 @@ class plumed2(object):
         distance_tmpl = 'DISTANCE ATOMS={at1:d},{at2:d} LABEL=b{at1:d}{at2:d}\n'
         # restraint_tmpl = 'RESTRAINT ARG=b{at1:d}{at2:d} AT=1.4 KAPPA=2000.0 LABEL=r{at1:d}{at2:d}\n'
         # Use UPPER AND LOWER WALLS instead of restreaint
-        restraint_tmpl = 'UPPER_WALLS ARG=b{at1:d}{at2:d} AT=1.4 KAPPA=2000.0 EXP=2. EPS=1. OFFSET=0. LABEL=r{at1:d}{at2:d}-uw\nLOWER_WALLS ARG=b{at1:d}{at2:d} AT=.5 KAPPA=2000.0 EXP=12. EPS=1. OFFSET=0. LABEL=r{at1:d}{at2:d}-lw\n'
+        restraint_tmpl = 'UPPER_WALLS ARG=b{at1:d}{at2:d} AT=max_dist KAPPA=max_kappa EXP=2. EPS=1. OFFSET=0. LABEL=r{at1:d}{at2:d}-uw\nLOWER_WALLS ARG=b{at1:d}{at2:d} AT=min_dist KAPPA=min_kappa EXP=12. EPS=1. OFFSET=0. LABEL=r{at1:d}{at2:d}-lw\n'
+
+        # Those will be at beginning og input file
         msg = '# Plumed input generated automatically by inputsGen\n'
-        msg+= 'UNITS LENGTH=.1 #Use Angstrom\n'
-        msg+= 'MOLINFO STRUCTURE={:s}\n\n'.format(self.pdbp)
+        msg += 'UNITS LENGTH=.1 #Use Angstrom\n'
+        msg += 'MOLINFO STRUCTURE={:s}\n\n'.format(self.pdbp)
+        msg += '# Set max distance between atoms\n'
+        msg += 'max_dist: CONSTANT VALUE=1.4\n'
+        msg += '# Set kappa for max distance between atoms\n'
+        msg += 'max_kappa: CONSTANT VALUE=2000.0\n'
+        msg += '# Set min distance between atoms\n'
+        msg += 'min_dist: CONSTANT VALUE=.5\n'
+        msg += '# Set kappa for min distance between atoms\n'
+        msg += 'min_kappa: CONSTANT VALUE=2000.0\n\n'
+
         for bond in self.connections:
             msg += distance_tmpl.format(at1=bond.bond[0], at2=bond.bond[1])
 
