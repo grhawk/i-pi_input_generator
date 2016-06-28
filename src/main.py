@@ -84,7 +84,7 @@ def main():
                   'The command:\nobabel {inf:s} -O{out:s}\ncan helps.'.format(
                       out=args['xyzfile'][:-4]+'.pdb', inf=args['xyzfile'])
             raise(IOError(msg))
-        plmd2(args['xyzfile'], options=args).write('plumed.dat')
+        plmd2(args['xyzfile'], options=args, home=config['home']).write('plumed.dat')
         rmscript = rPMany(nreps=args['slots'],
                          title=args['title']).write()
         with open('runManyPlumed.sh', 'w') as runManyf:

@@ -14,6 +14,7 @@ a script with the right command to call plumed2.
 
 """
 import sys
+import os
 
 # Try determining the version from git:
 try:
@@ -34,11 +35,12 @@ __email__ = 'riccardo.petraglia@gmail.com'
 __status__ = 'development'
 
 class plumed2(object):
-    def __init__(self, xyzpath=None, options=None):
+    def __init__(self, xyzpath=None, options=None, home='/home/student'):
         self.options = options
         self.pdbp = xyzpath[:-4]+'.pdb'
         
         self.connections = connectivity()
+        self.home = home
     
         with open(self.pdbp) as pdbf:
             for line in pdbf:
@@ -77,10 +79,12 @@ class plumed2(object):
         with open(outfile, 'w') as outf:
             outf.write(msg+'\n')
 
+        stderrpath = os.path.join(self.home, 'err', 'pippopluto_titlestderr_%j')
+        stdoutpath = os.path.join(self.home, 'err', 'pippopluto_titlestdout_%j')
         msg = '#!/bin/bash\n'
         msg += '#SBATCH -J plumed-pippopluto_title\n'
-        msg += '#SBATCH -e /home/petragli/err/pippopluto_titlestderr_%j\n'
-        msg += '#SBATCH -o /home/petragli/err/pippopluto_titlestdout_%j\n'
+        msg += '#SBATCH -e {:s}\n'.format(stderrpath)
+        msg += '#SBATCH -o {:s}\n'.format(stdoutpath)
         msg += '#SBATCH --mem=1000\n'
         msg += '#SBATCH --nodes=1\n'
         msg += '#SBATCH --ntasks-per-node=1\n'
