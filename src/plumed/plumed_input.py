@@ -108,8 +108,10 @@ cd $TMPDIR
 cp -ar $WORKING_DIR/plumed.dat $WORKING_DIR/*.pdb $TMPDIR
 touch $WORKING_DIR/RUNNING_PLUMED.lock
 
-source ~/REM@DFTB-bias/env/set_tree.sh
-source ~/REM@DFTB-bias/env/set_plumed.sh
+# source ~/REM@DFTB-bias/env/set_tree.sh
+# source ~/REM@DFTB-bias/env/set_plumed.sh
+
+source /home/petragli/remd\@dftb3/set_remd\@dftb3.sh
 
 '''
         msg += 'plumed socket --plumed {outfile:s} --host {address:s} --port {port:s} > $WORKING_DIR/plumed.out\n'.format(outfile=outfile, address=self.options['address'], port=str(self.options['port_bias']))
